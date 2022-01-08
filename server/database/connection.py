@@ -2,27 +2,29 @@ import os,mysql.connector as connector
 from colors import bcolors
 from model.main import Tables
 
-class DB:
-    DB_NAME = os.getenv("DB_NAME")
-    def __init__(self,config):
+dbConfig = {"host":"localhost","user":os.getenv("DB_USER"),"password":os.getenv("DB_PASSWORD")}
+
+class Database:
+    dbName = os.getenv("DB_NAME")
+    def __init__(self):
         try:
-            self.config = config
-            self.__initiateConnection(self.config)
+            self.dbConfig = dbConfig
+            self.__initiateConnection(self.dbConfig)
             self.__initiateTables()
         except Exception as error:
             exit(0)
     
-    def __initiateConnection(self,config):
+    def __initiateConnection(self,dbConfig):
         try:
-            self.dbConn = connector.connect(**config)
+            self.dbConn = connector.connect(**dbConfig)
             ##Creating Database if not exists
             curr = self.dbConn.cursor()
-            operation = f'CREATE DATABASE IF NOT EXISTS {self.DB_NAME}'
+            operation = f'CREATE DATABASE IF NOT EXISTS {self.dbName}'
             curr.execute(operation)
-            curr.execute(f'USE {self.DB_NAME}')
-            print(f'{bcolors["OKGREEN"]}Database connection initiated successfully.{bcolors["ENDC"]}')
+            curr.execute(f'USE {self.dbName}')
+            print(f'{bcolors["OKCYAN"]}[DATABASE]{bcolors["ENDC"]}Connection initiated.')
         except Exception as error:
-            print(f'{bcolors["FAIL"]} Failed to initiate connection! {bcolors["ENDC"]}')
+            print(f'{bcolors["FAIL"]}[DATABASE] Failed to initiate connection! {bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             raise error
     
@@ -33,5 +35,5 @@ class DB:
                 operation = f'CREATE TABLE IF NOT EXISTS {name} ({model})'
                 curr.execute(operation)
             except Exception as error:
-                print(f'{bcolors["FAIL"]}Failed to create "{name}"{bcolors["ENDC"]}')
+                print(f'{bcolors["FAIL"]}[DATABASE]Failed to create "{name}"{bcolors["ENDC"]}')
                 print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]}{error}')
