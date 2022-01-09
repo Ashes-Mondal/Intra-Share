@@ -2,12 +2,12 @@ model = (
 "clients",
 """ 
     clientID INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
-    status BOOL NOT NULL DEFAULT FALSE,
-    ip VARCHAR(255) NOT NULL,
-    port1 INT NOT NULL,
-    port2 INT NOT NULL
+    status BOOL DEFAULT TRUE,
+    ip VARCHAR(255) ,
+    port1 INT,
+    port2 INT
 """
 )
 

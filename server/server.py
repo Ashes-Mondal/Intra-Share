@@ -1,4 +1,4 @@
-import os,sys,socket
+import os,sys,socket,json
 from queue import Queue
 from threading import Thread,Lock,Event
 from dotenv import load_dotenv
@@ -15,39 +15,40 @@ class Functionalities(Database_Methods):
     
     __sendMessageRequestQueue = Queue()
     
-    def __login(self,client: tuple,data):
-        pass
-    def __signup(self,client: tuple,data):
-        pass
-    
     def __authenticateClient(self,client: tuple):
         conn,addr = client
         clientID = None
+        username = None
         while True:
             request = json.loads(str(conn.recv(4096),'utf-8'))
-                
+            response = {"type":"client_request_response","data":"Success","error":None}
             if len(request) == 0:
                 ##client has disconnected from server
                 conn.close()
                 sys.exit()##exists from the thread
             
             if request["type"] == 'client_login':
-                clientID = self.__login(client,request["data"])
+                try:
+                    clientID,username = self._checkLoginCredentials(request["data"])
+                except:
+                    error_msg = f'Failed to login!'
+                    response = {"type":"client_request_response","data":None,"error":error_msg}
             elif request["type"] == 'client_signup':
-                clientID = self.__signup(client,request["data"])
+                clientID,username = self._createNewProfile(request["data"])
             else:
                 error_msg = f'Unauthorised request!'
-                response = {"type":"client_request_error","error":error_msg}
-                conn.sendall(encodeJSON(response))
-            if clientID is not None:
-                return clientID
+                response = {"type":"client_request_response","data":None,"error":error_msg}
+            conn.sendall(encodeJSON(response))
+            if clientID!= None and username!=None:
+                return clientID,username
     
     def _listenClientForRequests(self,client: tuple,server_password: str = None):
         conn,addr = client
         clientID = None
+        username = None
         ##Initial checks before allowing client to send requests 
         try:
-            clientID = self.__authenticateClient(client)
+            clientID,username = self.__authenticateClient(client)
             self._getMetadataFromClient(clientID,client)
         except:
             sys.exit()
@@ -65,14 +66,22 @@ class Functionalities(Database_Methods):
                     ##client has disconnected from server
                     self._closeClientConnection(clientID,client)
                     sys.exit()##exists from the thread
+                    
                 ##Working according to request type
+                response = {"type":"client_request_response","data":"Success","error":None}
                 if request["type"] == 'send_message':
                     ##request["data"] = {sender:tuple(ip,port),receiver:tuple(ip,port),message:str}
                     self.__sendMessageRequestQueue.put(request["data"])
                 elif request["type"] == "update_client_username":
                     ##request["data"] = username:str
-                    username = request["data"]
-                    self._updateClientUsername(clientID,addr,username)
+                    newUsername = request["data"]
+                    try:
+                        self._updateClientUsername(clientID,newUsername)
+                        username = newUsername
+                    except:
+                        error_msg = f'Failed to update username!'
+                        response = {"type":"client_request_error","data":None,"error":error_msg}
+                conn.sendall(encodeJSON(response))
             except socket.error as error:
                 print(f'[Listening Error]=>{addr[0]}:{addr[1]}:= {error}')
                 self._closeClientConnection(clientID,client)
@@ -88,14 +97,16 @@ class Functionalities(Database_Methods):
                     ##client has disconnected from server
                     self._closeClientConnection(clientID,client)
                     sys.exit()##exists from the thread
-                    
+                
+                response = {"type":"client_request_response","data":"Success","error":None}
                 ##if request["type"] == 'client_metadata'
                 if request["type"] == 'client_metadata':
-                    self._updateClientMetadata(clientID,client)
+                    metadata = request["data"]
+                    self._updateClientMetadata(clientID,metadata)
                 else:
                     error_msg = f'Unauthorised request!'
-                    response = {"type":"client_request_error","error":error_msg}
-                    conn.sendall(encodeJSON(response))
+                    response = {"type":"client_request_response","data":None,"error":error_msg}
+                conn.sendall(encodeJSON(response))
                     
             except Exception as error:
                 print(f'{bcolors["FAILED"]}[SERVER]Failed to get metadata from {bcolors["UNDERLINE"]}{addr[0]}:{addr[1]}{bcolors["ENDC"]}')
@@ -112,11 +123,11 @@ class Functionalities(Database_Methods):
             receiver_addr = data['receiver'] = tuple(data['receiver'])
             
             try:
-                receiver = self.__getClient(receiver_addr)
+                receiver = self._getClientDetails(receiver_addr)
                 response = {"type":"got_message","data":data}
                 receiver.conn.sendall(encodeJSON(response))
             except socket.error as error:
-                sender = self.__getClient(sender_addr)
+                sender = self._getClientDetails(sender_addr)
                 error_msg = f'Failed to send message,receiver went offline!'
                 response = {"type":"send_message_error","error":error_msg}
                 sender.conn.sendall(encodeJSON(response))
@@ -156,7 +167,7 @@ class Server(Functionalities):
             self.server.bind((self.host,self.port))
             self.host,self.port= self.server.getsockname()
             self.server.listen(self.max_listen_limit)
-            print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}Socket binding := {bcolors["UNDERLINE"]}{self.host}:{self.port}{bcolors["ENDC"]}')
+            print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}Socket binding at:= {bcolors["UNDERLINE"]}{self.host}:{self.port}{bcolors["ENDC"]}')
         except socket.error as error:
             print(f'{bcolors["FAILED"]}[SERVER] Failed to bind TCP socket to {bcolors["ENDC"]}{bcolors["UNDERLINE"]}{self.host}:{self.port}{bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
