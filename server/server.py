@@ -1,6 +1,6 @@
-import os,sys,socket,json
+import os,sys,socket,json,time
 from queue import Queue
-from threading import Thread,Lock,Event
+from threading import Thread,Lock,Event,current_thread
 from dotenv import load_dotenv
 load_dotenv()
 from database.methods import Database_Methods
@@ -13,7 +13,32 @@ class Functionalities(Database_Methods):
     def __init__(self):
         Database_Methods.__init__(self)
     
+    lock = Lock()
     __sendMessageRequestQueue = Queue()
+    allClients = []
+    def _sendUpdatedClientList(self,timeout: int):
+        print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}{current_thread().getName()} online...')
+        while True:
+            time.sleep(timeout)
+            with self.lock:
+                ipList = []
+                for client in self.allClients:
+                    conn,addr = client.client
+                    try:
+                        conn.sendall(str(' ').encode())
+                        ipList.append((client.username,client.clientID))
+                    except socket.error as error:
+                        client.conn.close()
+                        del client
+                response = {"type":"server-update","data":ipList}
+                encoded_response = encodeJSON(response)
+                for client in self.allClients:
+                    conn,addr = client.client
+                    try:
+                        conn.sendall(encoded_response)
+                    except socket.error as error:
+                        conn.close()
+                        del client
     
     def __authenticateClient(self,client: tuple):
         conn,addr = client
@@ -56,7 +81,8 @@ class Functionalities(Database_Methods):
         ##Welcome message send to client
         msg = {"type":"connection_established","data":"Welcome to the server."}
         conn.sendall(encodeJSON(msg))
-        
+        with self.lock:
+            self.allClients.append({"client":client,"clientID":clientID,"username":username})
         ##Listening to clients for requests
         while True:
             try:
@@ -115,6 +141,15 @@ class Functionalities(Database_Methods):
     def _closeClientConnection(self,clientID: int,client: tuple):
         conn,addr = client
         conn.close()
+        try:
+            self._closeClientStatus(clientID)
+        except:
+            pass
+        with self.lock:
+            for c in self.allClients:
+                if c.cliendID == clientID:
+                    del c
+                    break
     
     def _sendMessage(self):
         while True:
@@ -145,13 +180,17 @@ class Server(Functionalities):
             self.__acceptedConnections = []
             self.__createSocket()
             while self.__bindSocket():continue
+            #Thread1:Accepts connections
             t1 = Thread(target=self.__acceptConnections,daemon=True,name=f'__acceptConnections_{self.port}')
+            #Thread2:Send updated self.allclient to all active clients
+            t2 = Thread(target=self._sendUpdatedClientList,args=(5,),daemon=True,name='_sendUpdatedClientList')
             for i in range(self.sendMessageThreadCount):
                 worker_thread = Thread(target=self._sendMessage,daemon=True,name=f'worker_thread{i}')
                 worker_thread.start()
-            t1.start()        
+            t1.start()    
+            t2.start()    
         except Exception as error:
-            raise error
+            sys.exit()
     
     def __createSocket(self):
         try:
@@ -174,6 +213,7 @@ class Server(Functionalities):
 
     def __acceptConnections(self):
         ## Caches all new established connections
+        print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}Caching all new established connections...')
         while True:
             try:
                 client = self.server.accept()
@@ -193,11 +233,15 @@ class Server(Functionalities):
 
 
 def main():
-    server = Server(host='',port=9999)
-    while True:
-        k = input()
-        if k == 'exit()':
-            server.closeServer()
+    try:
+        server = Server(host=socket.gethostbyname(socket.gethostname()),port=9999)
+        while True:
+            k = input()
+            if k == 'exit()':
+                server.closeServer()
+    except Exception as e:
+        sys.exit()
+    
 
 if __name__ == "__main__":
     main()

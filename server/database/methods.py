@@ -103,7 +103,7 @@ class Database_Methods(Database):
     def _getClientSharableFilesPath(self,clientID: int):
         pass
     
-    def _closeClientConnection(self,clientID: int):
+    def _closeClientStatus(self,clientID: int):
         try:
             operation = """
             UPDATE clients
