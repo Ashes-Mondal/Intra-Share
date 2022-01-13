@@ -1,47 +1,48 @@
 import mysql.connector
+import bcrypt
 from database.connection import Database
+from colors import bcolors
 
 class Database_Methods(Database):
     def __init__(self):
         Database.__init__(self)
     
-    def _checkLoginCredentials(self,credentials):
+    def _checkLoginCredentials(self,addr: tuple,credentials: dict):
         try:
             username = credentials["username"]
             password = credentials["password"]
-            operation = f'SELECT clientID,username,password FROM clients WHERE username=%s'
+            operation = f'SELECT clientID,password FROM clients WHERE BINARY username=%s'
             curr = self.dbConn.cursor()
-            curr.execute(operation,(username,password))
+            curr.execute(operation,(username,))
             res = curr.fetchone()
-            if len(res) == 0:
-                err_msg = "No such username found!"
-                raise err_msg
-            pwd = res[2]
-            if pwd == password:
-                return (res[0],res[1])
-            err_msg = "Password did not match!"
-            raise err_msg
+            if res == None:
+                ##creating new profile
+                return self._createNewProfile(addr,credentials)
+            ##checking if passwords matches
+            (clientID,hashed_password) = res
+            if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')) == False:
+                err_msg = "User password did not match!"
+                raise Exception(err_msg)
+            operation = """
+            UPDATE clients
+            SET ip=%s,port1=%s
+            WHERE clientID=%s"""
+            curr.execute(operation,(addr[0],addr[1],clientID))
+            return (clientID,username)
         except mysql.connector.Error as error:
             print(f'{bcolors["FAIL"]}[DATABASE] Failed to check login Credentials {bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             err_msg = f'INTERNAL SERVER ERROR'
-            raise err_msg
+            raise Exception(err_msg)
     
-    def _createNewProfile(self,data: dict):
+    def _createNewProfile(self,addr: tuple,credentials: dict):
         try:
             username = credentials["username"]
-            ##check if username already exists
-            operation = f'SELECT clientID FROM clients WHERE username=%s'
+            password = bcrypt.hashpw(credentials["password"].encode('utf-8'), bcrypt.gensalt()) 
+            IP,port1 = addr
+            operation = f'INSERT INTO clients (username, password, ip, port1) VALUES (%s,%s,%s,%s)'
             curr = self.dbConn.cursor()
-            curr.execute(operation,(username,))
-            res = curr.fetchall()
-            if len(res) > 0:
-                err_msg = f'Username "{username}" already exists.'
-                raise err_msg
-            password = credentials["password"]
-            operation = f'INSERT INTO clients (username, password) VALUES (%s,%s)'
-            curr = self.dbConn.cursor()
-            curr.execute(operation,(username,password))
+            curr.execute(operation,(username,password,IP,port1))
             self.dbConn.commit()
             clientID = curr.lastrowid
             return (clientID,username)
@@ -49,39 +50,44 @@ class Database_Methods(Database):
             print(f'{bcolors["FAIL"]}[DATABASE] Failed to create profile {bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             err_msg = f'INTERNAL SERVER ERROR'
-            raise err_msg
+            raise Exception(err_msg)
     
     def _updateClientUsername(self,clientID: int,newUsername:str):
         try:
+            operation = "SELECT clientID FROM clients WHERE BINARY username=%s"
+            curr = self.dbConn.cursor()
+            curr.execute(operation,(newUsername,))
+            res = curr.fetchone()
+            if res != None:
+                raise Exception(f'Failed to update username, "{newUsername}" already taken!')
             operation = """
             UPDATE clients
             SET username=%s
             WHERE clientID=%s
             """
-            curr = self.dbConn.cursor()
             curr.execute(operation,(newUsername,clientID))
             self.dbConn.commit()
         except mysql.connector.Error as error:
             print(f'{bcolors["FAIL"]}[DATABASE] Failed to update client username{bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             err_msg = f'INTERNAL SERVER ERROR'
-            raise err_msg
+            raise Exception(err_msg)
     
-    def _updateClientMetadata(self,clientID: int,metadata: dict):
+    def _updateClientPorts(self,clientID: int,ports: dict):
         try:
             operation = """
             UPDATE clients
-            SET status=%s,ip=%s, port1=%s, port2=%s
+            SET status=%s, port1=%s, port2=%s
             WHERE clientID=%s
             """
             curr = self.dbConn.cursor()
-            curr.execute(operation,(True,metadata["ip"],int(metadata["port1"]),int(metadata["port2"],clientID)))
+            curr.execute(operation,(True,ports["port1"],ports["port2"],clientID))
             self.dbConn.commit()
         except mysql.connector.Error as error:
             print(f'{bcolors["FAIL"]}[DATABASE] Failed to update client metadata{bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             err_msg = f'INTERNAL SERVER ERROR'
-            raise err_msg
+            raise Exception(err_msg)
         
     def _updateClientSharableFilesPath(self,clientID: int):
         pass
@@ -97,11 +103,11 @@ class Database_Methods(Database):
             print(f'{bcolors["FAIL"]}[DATABASE] Failed to get client details {bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             err_msg = f'INTERNAL SERVER ERROR'
-            raise err_msg
+            raise Exception(err_msg)
         
     
-    def _getClientSharableFilesPath(self,clientID: int):
-        pass
+    def _getClientSharedFilelist(self,clientID: int):
+        return None
     
     def _closeClientStatus(self,clientID: int):
         try:
@@ -117,4 +123,4 @@ class Database_Methods(Database):
             print(f'{bcolors["FAIL"]}[DATABASE] Failed to close client\'s connection{bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             err_msg = f'INTERNAL SERVER ERROR'
-            raise err_msg
+            raise Exception(err_msg)

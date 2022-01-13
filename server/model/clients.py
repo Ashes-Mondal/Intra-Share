@@ -2,9 +2,9 @@ model = (
 "clients",
 """ 
     clientID INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(255) NOT NULL,
+    username VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
-    status BOOL DEFAULT TRUE,
+    status BOOLEAN DEFAULT TRUE,
     ip VARCHAR(255) ,
     port1 INT,
     port2 INT
