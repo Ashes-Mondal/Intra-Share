@@ -12,6 +12,14 @@ class client_struct:
         self.username = username
         self.online = True
         self.unread_messages =[]
+        self.clientIP = None
+        
+        ##File sharing attributes
+        self.port2 = None
+        self.client = None
+        self.files = []
+        self.sendRequest = Queue()
+        self.getResponse = Queue()
 
 class ServerInteraction:
     def __init__(self):
@@ -110,9 +118,9 @@ class ServerInteraction:
         senderID = data['sender']
         message = data['message']
         if self.activeMessagingClient!=None and self.activeMessagingClient.clientID == senderID:
+            ##client is talking to that client
             username = self.activeMessagingClient.username
             print(f'{bcolors["OKCYAN"]}<{username}>{bcolors["ENDC"]}{message}',end='\n')
         else:
             with self.__lock:
-                print(len(self.activeClients))
                 self.activeClients[senderID].unread_messages.append(message)

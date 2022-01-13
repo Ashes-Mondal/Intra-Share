@@ -134,6 +134,16 @@ class Functionalities(Database_Methods):
                         server_response = {"type":"client_request_response","data":None,"error":str(error)}
                     self.allClients[clientID].sendQueue.put(server_response)
                 
+                ##get client's file sharing address
+                elif client_request["type"] == "get_addr":
+                    ID = client_request["data"]
+                    if ID in self.allClients.keys():
+                        IP = self.allClients[ID].clientIP
+                        port2 = self.allClients[ID].port2
+                        server_response = {"type":"client_request_response","data":(IP,port2),"error":None}
+                    else:
+                        server_response = {"type":"client_request_response","data":None,"error":"Failed client went offline!"}
+                    self.allClients[clientID].sendQueue.put(server_response)
             except socket.error as error:
                 print(f'{bcolors["FAIL"]}[SERVER]Failed to keep listening to the client!{bcolors["ENDC"]}{bcolors["UNDERLINE"]}{self.allClients[clientID].clientIP}{bcolors["ENDC"]}')
                 print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')

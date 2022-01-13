@@ -5,7 +5,7 @@ from colors import bcolors
 from serverInteraction import ServerInteraction
 from fileSharing import FileSharingFunctionalities
 
-SERVER_IP = '192.168.0.169'
+SERVER_IP = '192.168.1.15'
 SERVER_PORT = 9999
 SERVER_PASSWORD = 'qwerty'
 USER_CREDENTIALS = {
@@ -165,8 +165,24 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             else:
                 print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} {bcolors["FAIL"]}{server_response["error"]}{bcolors["ENDC"]}',end='\n')
         except socket.error as error:
-            print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error sending message...')
+            print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error sending message!')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            
+    def getAddrOfClient(self,clientID:int):
+        if clientID in self.activeClients.keys():
+            if self.activeClients[clientID].clientIP is None:
+                request = {"type":"get_addr","data":clientID}
+                try:
+                    self.client.sendall(encodeJSON(request))
+                    
+                    ##Waiting for response from server
+                    server_response = self.SRCRQ.get()
+                    return server_response["data"] if server_response["data"]==None else tuple(server_response["data"])
+                except Exception as error:
+                    print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error getting address of client!')
+                    print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            else:
+                return (self.activeClients[clientID].clientIP,self.activeClients[clientID].port2)
 
 class InteractiveShell(Client):
     def __init__(self):
@@ -231,6 +247,14 @@ class InteractiveShell(Client):
             elif "update username to" in command:
                 newUsername = command.split(" ")[3]
                 self.updateUsername(newUsername)
+            elif "get address" in command:
+                try:
+                    paclientID = int(command.split(" ")[2])
+                    res = self.getAddrOfClient(clientID)
+                    print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} {res}')
+                except Exception as error:
+                    print(f'"{command}" is an invalid command.')
+                
             else:
                 print(f'"{command}" is an invalid command.')
 
