@@ -1,14 +1,11 @@
 import socket,sys,json
 from colors import bcolors
-
-def encodeJSON(input: dict):
-    return str(json.dumps(input)).encode()
-
+from utils import encodeJSON
 
 class FileSharingFunctionalities:
     def __init__(self):
         self.port2 = None##File sharing port
-        self.FTCU = []##File Taking Clients from User
+        self.FileTakingclients = []
         
     def _connectToClient(self,clientID:int,addr: tuple):
         if addr == None:
@@ -16,11 +13,11 @@ class FileSharingFunctionalities:
         self.client = socket.socket()
         self.client.connect(self.server_addr)
         self.clientIP,self.port1 = self.client.getsockname()
-        pass
     
     
-    def _listenClientForRequests(self):
-        pass
+    def _listenClientForRequests(self,client):
+        conn,addr = client
+    
     
     def _closeFileClient(self,client: tuple):
         conn,addr = client

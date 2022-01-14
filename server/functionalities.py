@@ -38,7 +38,6 @@ class Functionalities(Database_Methods):
         ##Sending password request to the client
         pwd_request = {"type":"password_verification"}
         conn.sendall(encodeJSON(pwd_request))
-        
         ##receiving password from the client
         client_response = str(conn.recv(4096),'utf-8')
         if len(client_response) == 0:
@@ -118,12 +117,12 @@ class Functionalities(Database_Methods):
                     if data["receiver"] in self.allClients.keys():
                         self.allClients[data["receiver"]].sendQueue.put(client_request)
                     else:
-                        server_response = {"type":"client_request_response","data":None,"error":"Failed to send message,client went offline!"}
+                        server_response = {"type":"client_request_response_SM","data":None,"error":"Failed to send message,client went offline!"}
                         self.allClients[data["sender"]].sendQueue.put(server_response)
                 
                 ##update_client_username
                 elif client_request["type"] == "update_client_username":
-                    server_response = {"type":"client_request_response","data":"Successfully updated your username.","error":None}
+                    server_response = {"type":"client_request_response_UU","data":"Successfully updated your username.","error":None}
                     ##request["data"] = username:str
                     newUsername = client_request["data"]
                     try:
@@ -131,7 +130,7 @@ class Functionalities(Database_Methods):
                         with self.__lock:
                             self.allClients[clientID].username = newUsername
                     except Exception as error:
-                        server_response = {"type":"client_request_response","data":None,"error":str(error)}
+                        server_response = {"type":"client_request_response_UU","data":None,"error":str(error)}
                     self.allClients[clientID].sendQueue.put(server_response)
                 
                 ##get client's file sharing address
@@ -140,9 +139,9 @@ class Functionalities(Database_Methods):
                     if ID in self.allClients.keys():
                         IP = self.allClients[ID].clientIP
                         port2 = self.allClients[ID].port2
-                        server_response = {"type":"client_request_response","data":(IP,port2),"error":None}
+                        server_response = {"type":"client_request_response_GP","data":(IP,port2),"error":None}
                     else:
-                        server_response = {"type":"client_request_response","data":None,"error":"Failed client went offline!"}
+                        server_response = {"type":"client_request_response_GP","data":None,"error":"Failed client went offline!"}
                     self.allClients[clientID].sendQueue.put(server_response)
             except socket.error as error:
                 print(f'{bcolors["FAIL"]}[SERVER]Failed to keep listening to the client!{bcolors["ENDC"]}{bcolors["UNDERLINE"]}{self.allClients[clientID].clientIP}{bcolors["ENDC"]}')
@@ -158,7 +157,7 @@ class Functionalities(Database_Methods):
                 if request["type"] == "close_thread":
                     sys.exit()
                 ##server_update
-                if request["type"] == "server_update" or request["type"] == "client_request_response" :
+                if request["type"] == "server_update" or "client_request_response" in request["type"]:
                     conn.sendall(encodeJSON(request))
                 elif request["type"] == "send_message":
                     data = request["data"]
@@ -166,14 +165,14 @@ class Functionalities(Database_Methods):
                     conn.sendall(encodeJSON(sendMsg))
                     ##Send success message to sender
                     if data["sender"] in self.allClients.keys():
-                        res = {"type":"client_request_response","data":"Message delivered","error":None}
+                        res = {"type":"client_request_response_SM","data":"Message delivered","error":None}
                         self.allClients[data["sender"]].sendQueue.put(res)
             except Exception as e:
                 if request["type"] == "send_message":
                     ##Send Failed message to sender
                     data = request["data"]
                     if data["sender"] in self.allClients.keys():
-                        res = {"type":"client_request_response","data":None,"error":f'Failed to send "{data["message"]}"'}
+                        res = {"type":"client_request_response_SM","data":None,"error":f'Failed to send "{data["message"]}"'}
                         self.allClients[data["sender"]].sendQueue.put(res)
                 sys.exit()
             self.allClients[clientID].sendQueue.task_done()
