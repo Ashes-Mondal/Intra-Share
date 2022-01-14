@@ -1,33 +1,54 @@
 import socket,sys,json
-from threading import Thread,Lock,Event
+from threading import Thread,Lock
 from queue import Queue
 from colors import bcolors
-
-def encodeJSON(input: dict):
-    return str(json.dumps(input)).encode()
-
+from utils import encodeJSON
 class client_struct:
-    def __init__(self,clientID: int,username: str):
+    def __init__(self,clientID: int,username: str,online: bool = True):
         self.clientID = clientID
         self.username = username
-        self.online = True
+        self.online = online
         self.unread_messages =[]
         self.clientIP = None
         
         ##File sharing attributes
         self.port2 = None
+        self.filesTaking = []
+        self.filesGiving = []
+        ##Channel
         self.client = None
-        self.files = []
-        self.sendRequest = Queue()
-        self.getResponse = Queue()
+        self.sendFileReq = Queue()
+        self.getFileRes = Queue()
+    
+    def __lt__(self, obj):
+        ##is self less than obj?
+        if (self.online == True and obj.online == True) or (self.online == False and obj.online == False):
+            return  self.username<obj.username
+        else:
+            return self.online
+    
+    def __gt__(self, obj):
+        ##is self greater than obj?
+        if (self.online == True and obj.online == True) or (self.online == False and obj.online == False):
+            return  self.username>obj.username
+        else:
+            return self.online == False
 
 class ServerInteraction:
     def __init__(self):
-        self.CRQ = Queue()## Client's Request Queue
-        self.SRCRQ = Queue()## Server's Response To Client's Request Queue
-        self.SFL = list()##Shared File list
+        #<-----------Different channels---------->
+        ##request channel
+        self.clientReq_Channel = Queue()
+        
+        ##response channel
+        self.sendMessageRes_Channel = Queue()
+        self.updateUsernameRes_Channel = Queue()
+        self.getPortRes_Channel = Queue()
+        #<-----------******************---------->
+        
+        self.hostedFiles = []
             
-        self.__lock = Lock()
+        self._lock = Lock()
         ##Server config
         self.server_addr = None
         self.server_password = None
@@ -93,8 +114,7 @@ class ServerInteraction:
         return server_response["data"]
     
     def _updateActiveClientsList(self,allClients):
-        ##O(n + m)
-        with self.__lock:
+        with self._lock:
             for clientID in self.activeClients.keys():
                 self.activeClients[clientID].online = False
             
@@ -113,6 +133,7 @@ class ServerInteraction:
             for clientID in list(self.activeClients.keys()):
                 if self.activeClients[clientID].online == False and len(self.activeClients[clientID].unread_messages) == 0:
                     del self.activeClients[clientID]
+            # dict(sorted(K.items(), key=lambda x:x[1]))
     
     def _processReceivedMessage(self,data):
         senderID = data['sender']
@@ -122,5 +143,5 @@ class ServerInteraction:
             username = self.activeMessagingClient.username
             print(f'{bcolors["OKCYAN"]}<{username}>{bcolors["ENDC"]}{message}',end='\n')
         else:
-            with self.__lock:
+            with self._lock:
                 self.activeClients[senderID].unread_messages.append(message)

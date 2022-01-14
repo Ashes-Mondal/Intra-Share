@@ -1,11 +1,12 @@
-import socket,sys,json,time
-from threading import Thread,Lock,Event
+import socket,sys,json
+from threading import Thread,Event,current_thread
 from getpass import getpass
 from colors import bcolors
 from serverInteraction import ServerInteraction
 from fileSharing import FileSharingFunctionalities
+from utils import encodeJSON
 
-SERVER_IP = '192.168.1.15'
+SERVER_IP = '192.168.0.169'
 SERVER_PORT = 9999
 SERVER_PASSWORD = 'qwerty'
 USER_CREDENTIALS = {
@@ -13,12 +14,8 @@ USER_CREDENTIALS = {
     "password":"password"
 }
 
-def encodeJSON(input: dict):
-    return str(json.dumps(input)).encode()
-
 class Client(ServerInteraction,FileSharingFunctionalities):
     def __init__(self):
-        self._lock = Lock()
         self._closeEvent = Event()
         ServerInteraction.__init__(self)
         FileSharingFunctionalities.__init__(self)
@@ -55,9 +52,9 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             raise error
     
-    ##Objective2:Connect to server and listen in background
+    ##Objective2:Listen to the server
     def __listenToServer(self):
-        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Listening to server...')
+        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}{current_thread().getName()} is online...')
         while True:
             try:
                 server_response = str(self.client.recv(4096),'utf-8')
@@ -67,16 +64,36 @@ class Client(ServerInteraction,FileSharingFunctionalities):
                 elif server_response == ' ':continue
                 server_response = json.loads(server_response)
                 
+                ##debug print
+                # print(server_response) if server_response['type'] != 'server_update' else None
+                
                 if server_response['type'] == 'server_update':
                     self._updateActiveClientsList(server_response['data'])
                 elif server_response['type'] == 'got_message':
                     self._processReceivedMessage(server_response['data'])
-                elif server_response['type'] == 'client_request_response':
-                    self.SRCRQ.put(server_response)
+                elif server_response['type'] == 'client_request_response_SM':
+                    self.sendMessageRes_Channel.put(server_response)
+                elif server_response['type'] == 'client_request_response_UU':
+                    self.updateUsernameRes_Channel.put(server_response)
+                elif server_response['type'] == 'client_request_response_GP':
+                    self.getPortRes_Channel.put(server_response)
             except socket.error as error:
                 print(f'{bcolors["FAIL"]}[CLIENT]Failed to listen to server{bcolors["ENDC"]}')
                 print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
                 self.closeApplication()
+    
+    ##Objective3:Send requests to server
+    def __sendRequestToServer(self):
+        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}{current_thread().getName()} is online...')
+        while True:
+            try:
+                request = self.clientReq_Channel.get()
+                self.client.sendall(encodeJSON(request))
+                self.clientReq_Channel.task_done()
+            except Exception as error:
+                print(f'{bcolors["FAIL"]}[CLIENT]Failed to send request to server{bcolors["ENDC"]}')
+                print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            
     
     def __connectToServer(self):
         self.client = socket.socket()
@@ -90,7 +107,6 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             self.client.close()
             sys.exit()
         server_request = json.loads(server_request)
-        
         if server_request['type'] == 'password_verification':
             self._passwordVerification()
         
@@ -115,7 +131,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             self.__connectToServer()
             self._login()
             server_response = self._giveServerPorts(self.port1,self.port2)
-            self.SFL = server_response["fileList"]
+            self.hostedFiles = server_response["fileList"]
             self.clientID = server_response["clientID"]
             
             ##Successfully authenticated
@@ -127,11 +143,15 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             welcome_response = json.loads(welcome_response)
             print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}{bcolors["OKCYAN"]}{welcome_response["data"]}{bcolors["ENDC"]} {bcolors["UNDERLINE"]}{self.server_addr}{bcolors["ENDC"]}')
             
-            ##Thread2:Listen to server in background
+            ##Thread2:Listen to server
             t2 = Thread(target=self.__listenToServer,daemon=True,name=f'_listenToServer')
             t2.start()
+            
+            ##Thread3:Send requests to server
+            t3 = Thread(target=self.__sendRequestToServer,daemon=True,name=f'__sendRequestToServer')
+            t3.start()
         except Exception as error:
-            print(f'{bcolors["FAIL"]}[CLIENT]Failed to connect to server{bcolors["ENDC"]}')
+            print(f'{bcolors["FAIL"]}[CLIENT]Failed to connect to server {self.server_addr}{bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             self.closeClient()
             raise error
@@ -141,30 +161,34 @@ class Client(ServerInteraction,FileSharingFunctionalities):
         self._closeEvent.set()
         
     def updateUsername(self,username):
-        self.clientCredentials["username"] = username
+        request = {"type":"update_client_username","data":username}
         try:
-            self.client.sendall(encodeJSON({"type":"update_client_username","data":username}))
+            self.clientReq_Channel.put(request)
+
             ##Waiting for response from server
-            server_response = self.SRCRQ.get()
+            server_response = self.updateUsernameRes_Channel.get(timeout=2)
+            
             if server_response["data"]!=None:
                 self.clientCredentials["username"] = username
                 print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} {bcolors["OKCYAN"]}{server_response["data"]}{bcolors["ENDC"]}',end='\n')
             else:
                 print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} {bcolors["FAIL"]}{server_response["error"]}{bcolors["ENDC"]}',end='\n')
-        except socket.error as error:
+            self.updateUsernameRes_Channel.task_done()
+        except Exception as error:
             print(f'[Username update error]:= {error}')
     
     def sendMessage(self,receiverID,message):
-        response = {"type":"send_message","data":{"sender":self.clientID,"receiver":receiverID,"message":message}}
+        request = {"type":"send_message","data":{"sender":self.clientID,"receiver":receiverID,"message":message}}
         try:
-            self.client.sendall(encodeJSON(response))
+            self.clientReq_Channel.put(request)
             ##Waiting for response from server
-            server_response = self.SRCRQ.get()
+            server_response = self.sendMessageRes_Channel.get(timeout=2)
             if server_response["data"]!=None:
                 print(f'<{bcolors["HEADER"]}{self.clientCredentials["username"]}>{bcolors["ENDC"]} {message}',end='\n')
             else:
                 print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} {bcolors["FAIL"]}{server_response["error"]}{bcolors["ENDC"]}',end='\n')
-        except socket.error as error:
+            self.sendMessageRes_Channel.task_done()
+        except Exception as error:
             print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error sending message!')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             
@@ -172,17 +196,15 @@ class Client(ServerInteraction,FileSharingFunctionalities):
         if clientID in self.activeClients.keys():
             if self.activeClients[clientID].clientIP is None:
                 request = {"type":"get_addr","data":clientID}
-                try:
-                    self.client.sendall(encodeJSON(request))
-                    
-                    ##Waiting for response from server
-                    server_response = self.SRCRQ.get()
-                    return server_response["data"] if server_response["data"]==None else tuple(server_response["data"])
-                except Exception as error:
-                    print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error getting address of client!')
-                    print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+                self.clientReq_Channel.put(request)
+                ##Waiting for response from server
+                server_response = self.getPortRes_Channel.get(timeout=2)
+                self.getPortRes_Channel.task_done()
+                return server_response["data"] if server_response["data"]==None else tuple(server_response["data"])
             else:
                 return (self.activeClients[clientID].clientIP,self.activeClients[clientID].port2)
+        else:
+            raise Exception(f'{clientID} not online!')
 
 class InteractiveShell(Client):
     def __init__(self):
@@ -193,9 +215,9 @@ class InteractiveShell(Client):
             except Exception as e:
                 sys.exit()
             
-            ##Thread3:Start interacting with the application
-            t3 = Thread(target=self.__startShell,daemon=True,name=f'__startShell')
-            t3.start()
+            ##Thread4:Start interacting with the application
+            t4 = Thread(target=self.__startShell,daemon=True,name=f'__startShell')
+            t4.start()
             
             ##Close event
             self._closeEvent.wait()
@@ -249,7 +271,7 @@ class InteractiveShell(Client):
                 self.updateUsername(newUsername)
             elif "get address" in command:
                 try:
-                    paclientID = int(command.split(" ")[2])
+                    clientID = int(command.split(" ")[2])
                     res = self.getAddrOfClient(clientID)
                     print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} {res}')
                 except Exception as error:
@@ -258,9 +280,18 @@ class InteractiveShell(Client):
             else:
                 print(f'"{command}" is an invalid command.')
 
-
 def main():
-    InteractiveShell()
+    # InteractiveShell()
+    K = {}
+    K[1] = client_struct(1, "Ashes")
+    K[3] = client_struct(3, "Mondal")
+    K[2] = client_struct(2, "AsHes",online=False)
+        
+    print(K[2]>=K[3],"\n")
+    M = dict(sorted(K.items(), key=lambda x:x[1]))
+    
+    for k,v in M.items():
+        print(v.clientID," ",v.username)
 
 if __name__ == "__main__":
     main()
