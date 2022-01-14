@@ -1,11 +1,11 @@
 class Functionalities:
     def __init__(self, clientIns) -> None:
         self.clientIns = clientIns
-    def handleSubmit(self, uid, password, ip, port, serverPassword):
-        print(uid, password, ip, port, serverPassword)
-        credentials = {"username": uid, "password": password}
+    def handleSubmit(self, userid, password, serverip, port, serverPassword):
+        print(userid, password, serverip, port, serverPassword)
+        credentials = {"username": userid, "password": password}
         self.clientIns.startClient(
-            server_addr = (ip, port),
+            server_addr = (serverip, port),
             server_password=serverPassword,
             clientCredentials=credentials
         )
