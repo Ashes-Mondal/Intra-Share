@@ -118,10 +118,8 @@ class ServerInteraction:
             for clientID in self.activeClients.keys():
                 self.activeClients[clientID].online = False
             
-            for i,details in enumerate(allClients):
-                username = details[0]
-                clientID = details[1]
-                if self.clientID == clientID:
+            for username,clientID in allClients:
+                if clientID == self.clientID:
                     continue
                 
                 if clientID in self.activeClients.keys():
@@ -130,10 +128,8 @@ class ServerInteraction:
                     continue
                 self.activeClients[clientID] = client_struct(clientID, username)
             
-            for clientID in list(self.activeClients.keys()):
-                if self.activeClients[clientID].online == False and len(self.activeClients[clientID].unread_messages) == 0:
-                    del self.activeClients[clientID]
-            # dict(sorted(K.items(), key=lambda x:x[1]))
+            ##sorting active Clients
+            self.activeClients = dict(sorted(self.activeClients.items(), key=lambda x:x[1]))
     
     def _processReceivedMessage(self,data):
         senderID = data['sender']

@@ -2,11 +2,11 @@ import socket,sys,json
 from threading import Thread,Event,current_thread
 from getpass import getpass
 from colors import bcolors
-from serverInteraction import ServerInteraction
+from serverInteraction import ServerInteraction,client_struct
 from fileSharing import FileSharingFunctionalities
 from utils import encodeJSON
 
-SERVER_IP = '192.168.0.169'
+SERVER_IP = '192.168.1.15'
 SERVER_PORT = 9999
 SERVER_PASSWORD = 'qwerty'
 USER_CREDENTIALS = {
@@ -16,7 +16,7 @@ USER_CREDENTIALS = {
 
 class Client(ServerInteraction,FileSharingFunctionalities):
     def __init__(self):
-        self._closeEvent = Event()
+        self.closeEvent = Event()
         ServerInteraction.__init__(self)
         FileSharingFunctionalities.__init__(self)
     
@@ -64,7 +64,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
                 elif server_response == ' ':continue
                 server_response = json.loads(server_response)
                 
-                ##debug print
+                ##debug server response
                 # print(server_response) if server_response['type'] != 'server_update' else None
                 
                 if server_response['type'] == 'server_update':
@@ -143,6 +143,17 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             welcome_response = json.loads(welcome_response)
             print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}{bcolors["OKCYAN"]}{welcome_response["data"]}{bcolors["ENDC"]} {bcolors["UNDERLINE"]}{self.server_addr}{bcolors["ENDC"]}')
             
+            ##GET all members of the server
+            with self._lock:
+                for clientID,username in server_response["members"]:
+                    if clientID == self.clientID:
+                        continue
+                    if clientID in self.activeClients.keys():
+                        self.activeClients[clientID].username = username
+                        continue
+                    self.activeClients[clientID] = client_struct(clientID, username,online=False)
+            
+            
             ##Thread2:Listen to server
             t2 = Thread(target=self.__listenToServer,daemon=True,name=f'_listenToServer')
             t2.start()
@@ -158,7 +169,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
     
     def closeApplication(self):
         self.closeClient()
-        self._closeEvent.set()
+        self.closeEvent.set()
         
     def updateUsername(self,username):
         request = {"type":"update_client_username","data":username}
@@ -166,7 +177,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             self.clientReq_Channel.put(request)
 
             ##Waiting for response from server
-            server_response = self.updateUsernameRes_Channel.get(timeout=2)
+            server_response = self.updateUsernameRes_Channel.get(timeout=5)
             
             if server_response["data"]!=None:
                 self.clientCredentials["username"] = username
@@ -182,7 +193,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
         try:
             self.clientReq_Channel.put(request)
             ##Waiting for response from server
-            server_response = self.sendMessageRes_Channel.get(timeout=2)
+            server_response = self.sendMessageRes_Channel.get(timeout=5)
             if server_response["data"]!=None:
                 print(f'<{bcolors["HEADER"]}{self.clientCredentials["username"]}>{bcolors["ENDC"]} {message}',end='\n')
             else:
@@ -198,7 +209,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
                 request = {"type":"get_addr","data":clientID}
                 self.clientReq_Channel.put(request)
                 ##Waiting for response from server
-                server_response = self.getPortRes_Channel.get(timeout=2)
+                server_response = self.getPortRes_Channel.get(timeout=5)
                 self.getPortRes_Channel.task_done()
                 return server_response["data"] if server_response["data"]==None else tuple(server_response["data"])
             else:
@@ -220,7 +231,7 @@ class InteractiveShell(Client):
             t4.start()
             
             ##Close event
-            self._closeEvent.wait()
+            self.closeEvent.wait()
             sys.exit()
     
     def __displayActiveClients(self):
@@ -228,9 +239,9 @@ class InteractiveShell(Client):
             print(f'{bcolors["OKBLUE"]}No other active clients found!{bcolors["ENDC"]}')
         else:
             print(f'{bcolors["OKCYAN"]}<------- Active Clients ------>{bcolors["ENDC"]}')
-            print(f'{bcolors["OKGREEN"]}ClientID            username{bcolors["ENDC"]}')
+            print(f'{bcolors["OKGREEN"]}ClientID            username        Status{bcolors["ENDC"]}')
             for clientID,clientOBJ in self.activeClients.items():
-                print(f'    {clientID}                {clientOBJ.username}')
+                print(f'    {clientID}                {clientOBJ.username}          {bcolors["OKCYAN"] if clientOBJ.online else bcolors["FAIL"]}{"ONLINE" if clientOBJ.online else "OFFLINE"}{bcolors["ENDC"]}')
     
     def __startSendingMessages(self,clientID: int):
         receiver = self.activeClients[clientID]
@@ -281,17 +292,7 @@ class InteractiveShell(Client):
                 print(f'"{command}" is an invalid command.')
 
 def main():
-    # InteractiveShell()
-    K = {}
-    K[1] = client_struct(1, "Ashes")
-    K[3] = client_struct(3, "Mondal")
-    K[2] = client_struct(2, "AsHes",online=False)
-        
-    print(K[2]>=K[3],"\n")
-    M = dict(sorted(K.items(), key=lambda x:x[1]))
-    
-    for k,v in M.items():
-        print(v.clientID," ",v.username)
+    InteractiveShell()
 
 if __name__ == "__main__":
     main()

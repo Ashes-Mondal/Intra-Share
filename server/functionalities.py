@@ -54,6 +54,9 @@ class Functionalities(Database_Methods):
             raise Exception("You are not authenticated, request dropped.")
         response = {"type":"client_request_response","data":"Server password check successfull.","error":None}
         conn.sendall(encodeJSON(response))
+        
+        # print("PASSED _checkForServerPassword")
+        
         time.sleep(0.1)
 
     def _authenticateClient(self,client: tuple):
@@ -72,6 +75,9 @@ class Functionalities(Database_Methods):
             raise Exception("You are not authenticated, request dropped.")
         response = {"type":"client_request_response","data":f'Authenticated successfully',"error":None}
         conn.sendall(encodeJSON(response))
+        
+        # print("PASSED _authenticateClient")
+        
         time.sleep(0.1)
         return clientID,username
     
@@ -90,11 +96,15 @@ class Functionalities(Database_Methods):
             ports = client_response["data"]
             self._updateClientPorts(clientID,ports)
             fileList = self._getClientSharedFilelist(clientID)
+            members = self._getAllMembers()
         else:
             self._closeClientStatus(clientID)
             raise Exception("You are not authenticated, request dropped.")
-        server_response = {"type":"client_request_response","data":{"fileList":fileList,"clientID":clientID},"error":None}
+        server_response = {"type":"client_request_response","data":{"fileList":fileList,"clientID":clientID,"members":members},"error":None}
         conn.sendall(encodeJSON(server_response))
+        
+        # print("PASSED _getPortsFromClient")
+        
         time.sleep(0.1)
         return ports
 
