@@ -11,5 +11,5 @@ if __name__ == "__main__":
     ui = Ui_MainWindow(clientIns)
     ui.startUI()
     ui.MainWindow.show()
-    clientIns.closeEvent.wait()
+    # clientIns.closeEvent.wait()
     sys.exit(app.exec_())
