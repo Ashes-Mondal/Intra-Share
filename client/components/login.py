@@ -1,6 +1,22 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from functionality import Functionalities
 
+def validateIP(serverip):
+    dotIndex = []
+    for i in range(0, len(serverip)):
+        if serverip[i] == '.':
+            dotIndex.append(i)
+        elif serverip[i] > '9' or serverip[i] < '0':
+            return False
+    
+    if len(dotIndex) is not 3:
+        return False    
+    for i in range(0, 3):
+        if serverip[dotIndex[i] - 1] == '.' or serverip[dotIndex[i] + 1] == '.':
+            return False    
+    return True
+
+
 class Ui_MainWindow(Functionalities):
     def __init__(self, clientIns) -> None:
         super().__init__(clientIns)
@@ -151,16 +167,30 @@ class Ui_MainWindow(Functionalities):
         self.label_error.setText(_translate("MainWindow", ""))
 
     def validateCredentials(self):
-        #TXTBOX for credentials
         userid = self.uid_input.text()
         password = self.password_input.text()
         serverip = self.ip_input.text()
         port = self.port_input.text()
         serverPassword = self.password_input_2.text()
         try:
-            errstr = 'Exit Server Function initiated...' + serverPassword
+            allValid = True
+            errstr = ""
+            # validate server ip
+            allValid = validateIP(serverip)
+            if not allValid:
+                errstr = "Invalid IP entered"
+            # validate port number
+            try:
+                port = int(port)
+                if port < 1 or port > 65535:
+                    errstr = "Invalid Port Number, should be an integer b/w 1 - 65535"
+                    allValid = False
+            except:
+                errstr = "Invalid Port Number, should be an integer b/w 1 - 65535"
+                allValid = False
             self.label_error.setText(errstr)
             self.label_error.adjustSize()
-            self.handleSubmit(userid, password, serverip, port, serverPassword)
+            if allValid:
+                self.handleSubmit(userid, password, serverip, port, serverPassword)
         except Exception as e:
             print("ERROR ", str(e)) #TXTBOX for displaying error
