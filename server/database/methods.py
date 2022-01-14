@@ -109,6 +109,19 @@ class Database_Methods(Database):
     def _getClientSharedFilelist(self,clientID: int):
         return None
     
+    def _getAllMembers(self):
+        try:
+            operation = """SELECT clientID,username FROM clients"""
+            curr = self.dbConn.cursor()
+            curr.execute(operation)
+            members = curr.fetchall()
+            return members
+        except mysql.connector.Error as error:
+            print(f'{bcolors["FAIL"]}[DATABASE] Failed to close client\'s connection{bcolors["ENDC"]}')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            err_msg = f'INTERNAL SERVER ERROR'
+            raise Exception(err_msg)
+    
     def _closeClientStatus(self,clientID: int):
         try:
             operation = """
