@@ -72,7 +72,15 @@ class Server(Functionalities):
                 
                 ##Initial checks before allowing client to send requests 
                 try:
-                    self._checkForServerPassword(client)
+                    if self._server_password != None:
+                        ##Sending password request to the client
+                        pwd_request = {"type":"password_verification"}
+                        conn.sendall(encodeJSON(pwd_request))
+                        self._checkForServerPassword(client)
+                    else:
+                        ##Sending client_authentication request to the client
+                        auth_request = {"type":"client_authentication"}
+                        conn.sendall(encodeJSON(auth_request))
                     clientID,username = self._authenticateClient(client)
                     ports = self._getPortsFromClient(clientID,client)
                 except Exception as error:
@@ -127,7 +135,7 @@ def get_ip():
 
 def main():
     try:
-        server = Server(host=get_ip(),port=9999,password='qwerty')
+        server = Server(host=get_ip(),port=9999,password=None)
         while True:
             k = input()
             if k == 'q':

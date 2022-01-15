@@ -32,12 +32,7 @@ class Functionalities(Database_Methods):
                     pass
     
     def _checkForServerPassword(self,client: tuple):
-        if self._server_password == None:return
         conn,addr = client
-        
-        ##Sending password request to the client
-        pwd_request = {"type":"password_verification"}
-        conn.sendall(encodeJSON(pwd_request))
         ##receiving password from the client
         client_response = str(conn.recv(4096),'utf-8')
         if len(client_response) == 0:
@@ -73,7 +68,11 @@ class Functionalities(Database_Methods):
             clientID,username = self._checkLoginCredentials(addr,client_response["data"])
         else:
             raise Exception("You are not authenticated, request dropped.")
+        
+        if clientID in self.allClients.keys():
+            raise Exception(f'You are already logged with other address {self.allClients[clientID].clientIP}:{self.allClients[clientID].port1}')
         response = {"type":"client_request_response","data":f'Authenticated successfully',"error":None}
+            
         conn.sendall(encodeJSON(response))
         
         # print("PASSED _authenticateClient")
