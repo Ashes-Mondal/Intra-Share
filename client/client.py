@@ -34,7 +34,6 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             except socket.error as error:
                 print(f'{bcolors["FAIL"]}[SERVER]Accepting connection error{bcolors["ENDC"]}')
                 print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
-                self._close
                 self.closeApplication()
     
     def __openFileSharingSocket(self):
