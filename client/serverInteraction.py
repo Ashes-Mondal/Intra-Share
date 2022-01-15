@@ -9,9 +9,9 @@ class client_struct:
         self.username = username
         self.online = online
         self.unread_messages =[]
-        self.clientIP = None
         
         ##File sharing attributes
+        self.clientIP = None
         self.port2 = None
         self.filesTaking = []
         self.filesGiving = []
@@ -34,6 +34,12 @@ class client_struct:
         else:
             return self.online == False
 
+    def debug(self):
+        print(f'clientID: {self.clientID}')
+        print(f'username: {self.username}')
+        print(f'unread_messages: {self.unread_messages}')
+        print(f'filesTaking: {self.filesTaking}')
+        print(f'filesGiving: {self.filesGiving}\n')
 class ServerInteraction:
     def __init__(self):
         #<-----------Different channels---------->

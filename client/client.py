@@ -1,12 +1,12 @@
-import socket,sys,json
+import socket,sys,json,copy
 from threading import Thread,Event,current_thread
 from getpass import getpass
 from colors import bcolors
 from serverInteraction import ServerInteraction,client_struct
 from fileSharing import FileSharingFunctionalities
-from utils import encodeJSON
+from utils import encodeJSON,getAppLastState,saveAppLastState
 
-SERVER_IP = '192.168.1.15'
+SERVER_IP = '192.168.x.xxx'
 SERVER_PORT = 9999
 SERVER_PASSWORD = 'qwerty'
 USER_CREDENTIALS = {
@@ -133,6 +133,15 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             server_response = self._giveServerPorts(self.port1,self.port2)
             self.hostedFiles = server_response["fileList"]
             self.clientID = server_response["clientID"]
+            prevState = getAppLastState(username=self.clientCredentials['username'],server_addr=self.server_addr)
+            for client in prevState:
+                with self._lock:
+                    obj = client_struct(client.clientID, client.username)
+                    obj.unread_messages = client.unread_messages or []
+                    obj.filesGiving = client.filesGiving or []
+                    obj.filesTaking = client.filesTaking or []
+                    obj.online = False
+                    self.activeClients[client.clientID] = obj
             
             ##Successfully authenticated
             welcome_response = str(self.client.recv(4096),'utf-8')
@@ -168,6 +177,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             raise error
     
     def closeApplication(self):
+        saveAppLastState(self.clientCredentials['username'],self.server_addr,self.activeClients)
         self.closeClient()
         self.closeEvent.set()
         
@@ -244,10 +254,15 @@ class InteractiveShell(Client):
                 print(f'    {clientID}                {clientOBJ.username}          {bcolors["OKCYAN"] if clientOBJ.online else bcolors["FAIL"]}{"ONLINE" if clientOBJ.online else "OFFLINE"}{bcolors["ENDC"]}')
     
     def __startSendingMessages(self,clientID: int):
+        if clientID not in self.activeClients.keys():
+            raise Exception("clientID not found in the list!")
         receiver = self.activeClients[clientID]
+        if receiver.online == False:
+            raise Exception(f'{self.activeClients[clientID].username} not online!')
         self.activeMessagingClient = receiver
         print(f'{self.clientCredentials["username"]} can now send messages to {receiver.username}')
         ##check for unread messages
+        # self.activeMessagingClient.debug()
         for message in self.activeMessagingClient.unread_messages:
             print(f'<{bcolors["OKCYAN"]}{receiver.username}>{bcolors["ENDC"]} {message}',end='\n')
         with self._lock:
