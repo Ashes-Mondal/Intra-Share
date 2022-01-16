@@ -1,7 +1,7 @@
 import os,sys,socket,json,time
-from database.methods import Database_Methods
 from threading import Thread,Lock,current_thread
 from queue import Queue
+from database.methods import Database_Methods
 from colors import bcolors
 
 def encodeJSON(input: dict):
@@ -9,11 +9,9 @@ def encodeJSON(input: dict):
 
 class Functionalities(Database_Methods):
     def __init__(self):
-        Database_Methods.__init__(self)
-
-    __lock = Lock()
-    _server_password = None
-    allClients = {}
+        self.__lock = Lock()
+        self._server_password = None
+        self.allClients = {}
     
     def _sendUpdatedClientList(self,timeout: int):
         print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}{current_thread().getName()} is online...')

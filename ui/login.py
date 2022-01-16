@@ -1,5 +1,4 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from functionality import Functionalities
 
 def validateIP(serverip):
     dotIndex = []
@@ -9,7 +8,7 @@ def validateIP(serverip):
         elif serverip[i] > '9' or serverip[i] < '0':
             return False
     
-    if len(dotIndex) is not 3:
+    if len(dotIndex) != 3:
         return False    
     for i in range(0, 3):
         if serverip[dotIndex[i] - 1] == '.' or serverip[dotIndex[i] + 1] == '.':
@@ -17,9 +16,9 @@ def validateIP(serverip):
     return True
 
 
-class Ui_MainWindow(Functionalities):
+class Ui_MainWindow():
     def __init__(self, clientIns) -> None:
-        super().__init__(clientIns)
+        self.clientIns = clientIns
         self.MainWindow = QtWidgets.QMainWindow()
     
     def startUI(self):
@@ -150,18 +149,22 @@ class Ui_MainWindow(Functionalities):
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         self.MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.label_heading.setText(_translate("MainWindow", "WELCOME TO THE LOCAL DC++ PROJECT"))
         self.submit_button.setText(_translate("MainWindow", "SUBMIT"))
         self.submit_button.clicked.connect(self.validateCredentials)
-        self.submit_button.clicked.connect(self.validateCredentials)
+        
+        self.label_uid.setText(_translate("MainWindow", "UserID*"))
+        self.uid_input.setPlaceholderText(_translate("MainWindow", "Enter User ID"))
+        
+        self.label_password.setText(_translate("MainWindow", "Password*"))
         self.password_input.setPlaceholderText(_translate("MainWindow", "Enter Password"))
+        
         self.label_ip.setText(_translate("MainWindow", "Server IP*"))
         self.ip_input.setPlaceholderText(_translate("MainWindow", "Server IP"))
-        self.label_password.setText(_translate("MainWindow", "Password*"))
-        self.label_heading.setText(_translate("MainWindow", "WELCOME TO THE LOCAL DC++ PROJECT"))
-        self.label_uid.setText(_translate("MainWindow", "User ID*"))
-        self.uid_input.setPlaceholderText(_translate("MainWindow", "Enter User ID"))
-        self.port_input.setPlaceholderText(_translate("MainWindow", "Port Number"))
+        
         self.label_port.setText(_translate("MainWindow", "Port*"))
+        self.port_input.setPlaceholderText(_translate("MainWindow", "Port Number"))
+        
         self.password_input_2.setPlaceholderText(_translate("MainWindow", "Enter Server Password"))
         self.label_password_2.setText(_translate("MainWindow", "Server Password"))
         self.label_error.setText(_translate("MainWindow", ""))
@@ -191,6 +194,19 @@ class Ui_MainWindow(Functionalities):
             self.label_error.setText(errstr)
             self.label_error.adjustSize()
             if allValid:
-                self.handleSubmit(userid, password, serverip, port, serverPassword)
-        except Exception as e:
-            print("ERROR ", str(e)) #TXTBOX for displaying error
+                credentials = {"username": userid, "password": password}
+                self.submit_button.setEnabled(False)
+                self.clientIns.startClient(
+                    server_addr = (serverip, port),
+                    server_password=serverPassword,
+                    clientCredentials=credentials
+                )
+                # self.handleSubmit(userid, password, serverip, port, serverPassword)
+        except Exception as error:
+            self.submit_button.setEnabled(True)
+            if str(error) == "timed out":
+                self.label_error.setText("Server couldn't be reached!")
+                self.label_error.adjustSize()
+            else:
+                self.label_error.setText(str(error))
+            self.label_error.adjustSize()

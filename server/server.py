@@ -3,6 +3,18 @@ from queue import Queue
 from threading import Thread,Lock,current_thread
 from dotenv import load_dotenv
 load_dotenv()
+
+if __name__ == "server.server":
+    curr_dir = os.getcwd()
+    sys.path.append(os.path.join(curr_dir,"server"))
+    sys.path.append(os.path.join(curr_dir,"server/database"))
+    
+if __name__ == "__main__":
+    pardir = os.pardir
+    sys.path.append(os.path.abspath(pardir))
+    curr_dir = os.getcwd()
+    sys.path.append(os.path.join(curr_dir,"database"))
+
 from colors import bcolors
 from functionalities import Functionalities,encodeJSON
 
@@ -27,18 +39,6 @@ class Server(Functionalities):
             self._server_password = password
             self.__maxListenLimit = limit
             self.__acceptedConnections = []
-            
-            ##creating and binding socket
-            self.__createSocket()
-            while self.__bindSocket():continue
-            
-            #Thread1:Accepts connections
-            t1 = Thread(target=self.__acceptConnections,daemon=True,name=f'__acceptConnections{self.port}')
-            t1.start()    
-            
-            #Thread2:Send updated self.allclient to all active clients
-            t2 = Thread(target=self._sendUpdatedClientList,args=(5,),daemon=True,name='_sendUpdatedClientList')
-            t2.start()    
         except Exception as error:
             sys.exit()
     
@@ -112,6 +112,22 @@ class Server(Functionalities):
                 self.closeServer()
     
     ##public methods
+    def startServer(self):
+        ##start Database
+        self.startDB()
+        
+        ##creating and binding socket
+        self.__createSocket()
+        while self.__bindSocket():continue
+        
+        #Thread1:Accepts connections
+        t1 = Thread(target=self.__acceptConnections,daemon=True,name=f'__acceptConnections{self.port}')
+        t1.start()    
+        
+        #Thread2:Send updated self.allclient to all active clients
+        t2 = Thread(target=self._sendUpdatedClientList,args=(5,),daemon=True,name='_sendUpdatedClientList')
+        t2.start()    
+    
     def closeServer(self):
         print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}Closing server socket...')
         self.server.close()
@@ -136,6 +152,7 @@ def get_ip():
 def main():
     try:
         server = Server(host=get_ip(),port=9999,password=None)
+        server.startServer()
         while True:
             k = input()
             if k == 'q':
