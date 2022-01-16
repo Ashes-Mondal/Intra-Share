@@ -1,20 +1,16 @@
-import socket,sys,json,os
-
-if __name__ == "client.client":
-    curr_dir = os.getcwd()
-    sys.path.append(os.path.join(curr_dir,"client"))
-    
-if __name__ == "__main__":
-    pardir = os.pardir
-    sys.path.append(os.path.abspath(pardir))
-
-from threading import Thread,Event,current_thread
+import json
+import os
+import socket
+import sys
 from getpass import getpass
-
+from threading import Event, Thread, current_thread    
+from Client.fileSharing import encodeJSON,FileSharingFunctionalities
+from Client.serverInteraction import ServerInteraction,client_struct
+from Client.utils import getAppLastState,saveAppLastState
 from colors import bcolors
-from serverInteraction import ServerInteraction,client_struct
-from fileSharing import FileSharingFunctionalities
-from utils import encodeJSON,getAppLastState,saveAppLastState
+
+
+
 
 
 SERVER_IP = '192.168.x.xxx'
@@ -99,7 +95,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
         while True:
             try:
                 request = self.clientReq_Channel.get()
-                self.client.sendall(encodeJSON(request))
+                self.client.sendall(utils.encodeJSON(request))
                 self.clientReq_Channel.task_done()
             except Exception as error:
                 print(f'{bcolors["FAIL"]}[CLIENT]Failed to send request to server{bcolors["ENDC"]}')
@@ -108,7 +104,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
     
     def __connectToServer(self):
         self.client = socket.socket()
-        self.client.settimeout(10)
+        self.client.settimeout(5)
         self.client.connect(self.server_addr)
         self.client.settimeout(None)
         self.clientIP,self.port1 = self.client.getsockname()
@@ -146,7 +142,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             server_response = self._giveServerPorts(self.port1,self.port2)
             self.hostedFiles = server_response["fileList"]
             self.clientID = server_response["clientID"]
-            prevState = getAppLastState(username=self.clientCredentials['username'],server_addr=self.server_addr)
+            prevState = utils.getAppLastState(username=self.clientCredentials['username'],server_addr=self.server_addr)
             for client in prevState:
                 with self._lock:
                     obj = client_struct(client.clientID, client.username)
@@ -190,7 +186,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             raise error
     
     def closeApplication(self):
-        saveAppLastState(self.clientCredentials['username'],self.server_addr,self.activeClients)
+        utils.saveAppLastState(self.clientCredentials['username'],self.server_addr,self.activeClients)
         self.closeClient()
         self.closeEvent.set()
         

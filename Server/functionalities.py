@@ -1,8 +1,9 @@
 import os,sys,socket,json,time
 from threading import Thread,Lock,current_thread
 from queue import Queue
-from database.methods import Database_Methods
+
 from colors import bcolors
+from .database.methods import Database_Methods
 
 def encodeJSON(input: dict):
     return str(json.dumps(input)).encode()

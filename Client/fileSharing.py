@@ -1,6 +1,6 @@
 import socket,sys,json
 from colors import bcolors
-from utils import encodeJSON
+from .utils import encodeJSON
 
 class FileSharingFunctionalities:
     def __init__(self):

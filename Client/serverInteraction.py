@@ -1,8 +1,9 @@
 import socket,sys,json
 from threading import Thread,Lock
 from queue import Queue
+
 from colors import bcolors
-from utils import encodeJSON
+from .utils import encodeJSON
 class client_struct:
     def __init__(self,clientID: int,username: str,online: bool = True):
         self.clientID = clientID

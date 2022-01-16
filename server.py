@@ -16,7 +16,7 @@ if __name__ == "__main__":
     sys.path.append(os.path.join(curr_dir,"database"))
 
 from colors import bcolors
-from functionalities import Functionalities,encodeJSON
+from Server.functionalities import Functionalities,encodeJSON
 
 class client_struct:
         def __init__(self,clientID:int,client:tuple,username:str,port2: int):

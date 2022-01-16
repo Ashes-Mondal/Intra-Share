@@ -1,18 +1,23 @@
-import sys,os
-from http import client
-from pydoc import cli
+import os
+import sys
+
 from PyQt5 import QtWidgets
-from client.client import Client
-from server.server import Server
-from ui.login import Ui_MainWindow as Login
+
+from client import Client
+from server import Server
+from UI.login import Ui_MainWindow
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
+    
     ##client instance
     clientIns = Client()
+    
+    ##client instance
     serverIns = Server()
-    login = Login(clientIns)
-    login.startUI()
-    login.MainWindow.show()
-    # login.closeEvent.wait()
+    
+    ui = Ui_MainWindow(clientIns)
+    ui.startUI()
+    ui.MainWindow.show()
+    
     sys.exit(app.exec_())

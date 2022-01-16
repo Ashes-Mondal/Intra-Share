@@ -1,6 +1,9 @@
-import os,mysql.connector as connector
+import os
+
+import mysql.connector as connector
 from colors import bcolors
-from model.main import Tables
+
+from .model.main import Tables
 
 dbConfig = {"host":"localhost","user":os.getenv("DB_USER"),"password":os.getenv("DB_PASSWORD")}
 

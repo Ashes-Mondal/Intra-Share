@@ -1,8 +1,12 @@
-import sys,os
-import mysql.connector
+import os
+import sys
+
 import bcrypt
+import mysql.connector
 from colors import bcolors
-from connection import Database
+
+from .connection import Database
+
 
 class Database_Methods: 
     def startDB(self):
