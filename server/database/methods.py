@@ -1,11 +1,15 @@
+import sys,os
 import mysql.connector
 import bcrypt
-from database.connection import Database
 from colors import bcolors
+from connection import Database
 
-class Database_Methods(Database):
-    def __init__(self):
-        Database.__init__(self)
+class Database_Methods: 
+    def startDB(self):
+        self.db = Database()
+        self.dbConn = self.db.dbConn
+        self.dbConfig = self.db.dbConfig
+        self.dbName = self.db.dbName
     
     def _checkLoginCredentials(self,addr: tuple,credentials: dict):
         try:

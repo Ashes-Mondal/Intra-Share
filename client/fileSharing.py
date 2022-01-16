@@ -28,26 +28,3 @@ class FileSharingFunctionalities:
         print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Closing file socket...')
         self.file_socket.close()
         sys.exit()
-
-
-
-
-import pickle,os
-def main():
-    filename = os.path.join('bin/test.dat')
-        
-    lst = ['Ashes','Mondal','utkarsh','Anurag']
-    
-    with open(filename,mode='rb') as f:
-        nList = []
-        while True:
-            try:
-                name = pickle.load(f)
-                nList.append(name)
-            except Exception as e:
-                break
-            
-    return nList                
-
-if __name__ == "__main__":
-    main()

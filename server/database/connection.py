@@ -5,8 +5,8 @@ from model.main import Tables
 dbConfig = {"host":"localhost","user":os.getenv("DB_USER"),"password":os.getenv("DB_PASSWORD")}
 
 class Database:
-    dbName = os.getenv("DB_NAME")
     def __init__(self):
+        self.dbName = os.getenv("DB_NAME")
         try:
             self.dbConfig = dbConfig
             self.__initiateConnection(self.dbConfig)

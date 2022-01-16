@@ -1,10 +1,21 @@
-import socket,sys,json,copy
+import socket,sys,json,os
+
+if __name__ == "client.client":
+    curr_dir = os.getcwd()
+    sys.path.append(os.path.join(curr_dir,"client"))
+    
+if __name__ == "__main__":
+    pardir = os.pardir
+    sys.path.append(os.path.abspath(pardir))
+
 from threading import Thread,Event,current_thread
 from getpass import getpass
+
 from colors import bcolors
 from serverInteraction import ServerInteraction,client_struct
 from fileSharing import FileSharingFunctionalities
 from utils import encodeJSON,getAppLastState,saveAppLastState
+
 
 SERVER_IP = '192.168.x.xxx'
 SERVER_PORT = 9999
@@ -13,6 +24,7 @@ USER_CREDENTIALS = {
     "username":"",
     "password":"password"
 }
+
 
 class Client(ServerInteraction,FileSharingFunctionalities):
     def __init__(self):
@@ -96,7 +108,9 @@ class Client(ServerInteraction,FileSharingFunctionalities):
     
     def __connectToServer(self):
         self.client = socket.socket()
+        self.client.settimeout(10)
         self.client.connect(self.server_addr)
+        self.client.settimeout(None)
         self.clientIP,self.port1 = self.client.getsockname()
         
         ##Fullfill server's initial needs
@@ -309,4 +323,5 @@ def main():
     InteractiveShell()
 
 if __name__ == "__main__":
+    sys.path.append('./')
     main()
