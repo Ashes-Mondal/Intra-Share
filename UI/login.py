@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+from .options import Options_MainWindow
 
 def validateIP(serverip):
     dotIndex = []
@@ -201,7 +202,12 @@ class Ui_MainWindow():
                     server_password=serverPassword,
                     clientCredentials=credentials
                 )
-                # self.handleSubmit(userid, password, serverip, port, serverPassword)
+                # move to main application file
+                self.window = QtWidgets.QMainWindow()
+                self.ui = Options_MainWindow()
+                self.ui.setupUi(self.window)
+                self.MainWindow.hide()
+                self.window.show()
         except Exception as error:
             self.submit_button.setEnabled(True)
             if str(error) == "timed out":
