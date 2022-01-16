@@ -210,7 +210,7 @@ class Ui_MainWindow():
                 errstr = "Invalid Port Number, should be an integer b/w 1 - 65535"
                 allValid = False
             # check empty fields
-            if len(userid) == 0 or len(password) == 0 or len(serverip) == 0 or len(port) == 0:
+            if len(userid) == 0 or len(password) == 0 or len(serverip) == 0:
                 errstr = "Please fill up the required fields"
                 allValid = False
             self.label_error.setText(errstr)
