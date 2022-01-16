@@ -36,18 +36,27 @@ class Ui_MainWindow():
         self.submit_button.setFont(font)
         self.submit_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.submit_button.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.submit_button.setStyleSheet("QPushButton {\n"
-        "    background-color : lightblue;\n"
-        "}\n"
-        "QPushButton::pressed {\n"
-        "    background-color : red;\n"
-        "}")
+        self.submit_button.setStyleSheet("QPushButton{    \n"
+"    background-color: qlineargradient(spread:pad, x1:0, y1:0.505682, x2:1, y2:0.477, stop:0 rgba(20, 47, 78, 219), stop:1 rgba(85, 98, 112, 226));\n"
+"    color:rgba(255, 255, 255, 210);\n"
+"    border-radius:5px;\n"
+"}\n"
+"QPushButton::hover{    \n"
+"    background-color: qlineargradient(spread:pad, x1:0, y1:0.505682, x2:1, y2:0.477, stop:0 rgba(40, 67, 98, 219), stop:1 rgba(105, 118, 132, 226));\n"
+"}\n"
+"QPushButton::pressed{    \n"
+"    padding-left:5px;\n"
+"    padding-top:5px;\n"
+"    background-color:rgba(105, 118, 132, 200);\n"
+"}")
         self.submit_button.setObjectName("submit_button")
         self.password_input = QtWidgets.QLineEdit(self.centralwidget)
         self.password_input.setGeometry(QtCore.QRect(430, 220, 371, 41))
-        self.password_input.setStyleSheet("QLineEdit {\n"
-        "    padding-left: 10\n"
-        "}")
+        self.password_input.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
+        "border:none;\n"
+        "border-left:2px dashed rgba(105, 118, 132, 255);\n"
+        "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
+        "padding:10px;")
         self.password_input.setEchoMode(QtWidgets.QLineEdit.Password)
         self.password_input.setObjectName("password_input")
         self.label_ip = QtWidgets.QLabel(self.centralwidget)
@@ -59,9 +68,11 @@ class Ui_MainWindow():
         self.label_ip.setObjectName("label_ip")
         self.ip_input = QtWidgets.QLineEdit(self.centralwidget)
         self.ip_input.setGeometry(QtCore.QRect(430, 280, 371, 41))
-        self.ip_input.setStyleSheet("QLineEdit {\n"
-        "    padding-left: 10\n"
-        "}")
+        self.ip_input.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
+        "border:none;\n"
+        "border-left:2px dashed rgba(105, 118, 132, 255);\n"
+        "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
+        "padding:10px;")
         self.ip_input.setEchoMode(QtWidgets.QLineEdit.Normal)
         self.ip_input.setObjectName("ip_input")
         self.label_password = QtWidgets.QLabel(self.centralwidget)
@@ -89,16 +100,20 @@ class Ui_MainWindow():
         self.label_uid.setObjectName("label_uid")
         self.uid_input = QtWidgets.QLineEdit(self.centralwidget)
         self.uid_input.setGeometry(QtCore.QRect(430, 160, 371, 41))
-        self.uid_input.setStyleSheet("QLineEdit {\n"
-        "    padding-left: 10\n"
-        "}")
+        self.uid_input.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
+        "border:none;\n"
+        "border-left:2px dashed rgba(105, 118, 132, 255);\n"
+        "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
+        "padding:10px;")
         self.uid_input.setEchoMode(QtWidgets.QLineEdit.Normal)
         self.uid_input.setObjectName("uid_input")
         self.port_input = QtWidgets.QLineEdit(self.centralwidget)
         self.port_input.setGeometry(QtCore.QRect(430, 340, 371, 41))
-        self.port_input.setStyleSheet("QLineEdit {\n"
-        "    padding-left: 10\n"
-        "}")
+        self.port_input.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
+        "border:none;\n"
+        "border-left:2px dashed rgba(105, 118, 132, 255);\n"
+        "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
+        "padding:10px;")
         self.port_input.setEchoMode(QtWidgets.QLineEdit.Normal)
         self.port_input.setObjectName("port_input")
         self.label_port = QtWidgets.QLabel(self.centralwidget)
@@ -123,9 +138,11 @@ class Ui_MainWindow():
         self.label_error.setObjectName("label_error")
         self.password_input_2 = QtWidgets.QLineEdit(self.centralwidget)
         self.password_input_2.setGeometry(QtCore.QRect(430, 400, 371, 41))
-        self.password_input_2.setStyleSheet("QLineEdit {\n"
-        "    padding-left: 10\n"
-        "}")
+        self.password_input_2.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
+        "border:none;\n"
+        "border-left:2px dashed rgba(105, 118, 132, 255);\n"
+        "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
+        "padding:10px;")
         self.password_input_2.setEchoMode(QtWidgets.QLineEdit.Password)
         self.password_input_2.setObjectName("password_input_2")
         self.label_password_2 = QtWidgets.QLabel(self.centralwidget)
@@ -191,6 +208,10 @@ class Ui_MainWindow():
                     allValid = False
             except:
                 errstr = "Invalid Port Number, should be an integer b/w 1 - 65535"
+                allValid = False
+            # check empty fields
+            if len(userid) == 0 or len(password) == 0 or len(serverip) == 0 or len(port) == 0:
+                errstr = "Please fill up the required fields"
                 allValid = False
             self.label_error.setText(errstr)
             self.label_error.adjustSize()
