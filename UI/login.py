@@ -83,7 +83,13 @@ class Ui_MainWindow():
         self.label_password.setFont(font)
         self.label_password.setObjectName("label_password")
         self.label_heading = QtWidgets.QLabel(self.centralwidget)
-        self.label_heading.setGeometry(QtCore.QRect(290, 40, 601, 61))
+        self.label_heading.setGeometry(QtCore.QRect(260, 30, 641, 61))
+        self.label_heading.setStyleSheet("border: 2px solid red;\n"
+        "border-radius: 10px;\n"
+        "padding-left: 10;\n"
+        "padding-right: 10;\n"
+        "color: rgb(85, 255, 255);\n"
+        "background-color: rgb(85, 0, 127);")
         font = QtGui.QFont()
         font.setFamily("MS Sans Serif")
         font.setPointSize(17)
@@ -210,7 +216,7 @@ class Ui_MainWindow():
                 errstr = "Invalid Port Number, should be an integer b/w 1 - 65535"
                 allValid = False
             # check empty fields
-            if len(userid) == 0 or len(password) == 0 or len(serverip) == 0 or len(port) == 0:
+            if len(userid) == 0 or len(password) == 0 or len(serverip) == 0:
                 errstr = "Please fill up the required fields"
                 allValid = False
             self.label_error.setText(errstr)

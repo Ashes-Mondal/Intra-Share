@@ -1,9 +1,35 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 
+class ButtonComponent:
+    def __init__(self, centralwidget, buttonDimension, index, label, mainLabel, msgList) -> None:
+        self.mainLabel = mainLabel
+        self.msgList = msgList
+        self.index = index
+        self.button = QtWidgets.QPushButton(centralwidget)
+        self.button.setGeometry(
+            QtCore.QRect(buttonDimension[0], buttonDimension[1], buttonDimension[2], buttonDimension[3])
+        )
+        font = QtGui.QFont()
+        font.setFamily("MS Sans Serif")
+        font.setPointSize(10)
+        font.setBold(True)
+        font.setWeight(75)
+        self.button.setFont(font)
+        self.button.setObjectName("pushButton" + str(index))
+
+        _translate = QtCore.QCoreApplication.translate
+        self.button.setText(_translate("MainWindow", label))
+        self.button.clicked.connect(self.sendMessage)
+    
+    def sendMessage(self):
+        self.mainLabel.setText(self.msgList[self.index])
+        self.mainLabel.adjustSize()
+
 class Options_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(955, 710)
+        MainWindow.setFixedWidth(1183)
+        MainWindow.setFixedHeight(855)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.label1 = QtWidgets.QLabel(self.centralwidget)
@@ -11,6 +37,8 @@ class Options_MainWindow(object):
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setUnderline(True)
+        self.counter = 0
+        self.msgList = ["Send Message Function initiated...", "Send File Function initiated...", "Exit Function initiated..."]
         self.label1.setFont(font)
         self.label1.setObjectName("label1")
         self.label2 = QtWidgets.QLabel(self.centralwidget)
@@ -21,33 +49,6 @@ class Options_MainWindow(object):
         font.setUnderline(False)
         self.label2.setFont(font)
         self.label2.setObjectName("label2")
-        self.pushButton1 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton1.setGeometry(QtCore.QRect(10, 130, 151, 41))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(10)
-        font.setBold(True)
-        font.setWeight(75)
-        self.pushButton1.setFont(font)
-        self.pushButton1.setObjectName("pushButton1")
-        self.pushButton2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton2.setGeometry(QtCore.QRect(190, 130, 151, 41))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(10)
-        font.setBold(True)
-        font.setWeight(75)
-        self.pushButton2.setFont(font)
-        self.pushButton2.setObjectName("pushButton2")
-        self.pushButton3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton3.setGeometry(QtCore.QRect(370, 130, 151, 41))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(10)
-        font.setBold(True)
-        font.setWeight(75)
-        self.pushButton3.setFont(font)
-        self.pushButton3.setObjectName("pushButton3")
         self.mainLabel = QtWidgets.QLabel(self.centralwidget)
         self.mainLabel.setGeometry(QtCore.QRect(10, 220, 461, 31))
         font = QtGui.QFont()
@@ -56,6 +57,15 @@ class Options_MainWindow(object):
         font.setUnderline(False)
         self.mainLabel.setFont(font)
         self.mainLabel.setObjectName("mainLabel")
+
+        self.buttonObjs = []
+        labelList = ["Send a Message", "Send a File", "Exit"]
+        self.msgList = ["Send Message Function initiated...", "Send File Function initiated...", "Exit Function initiated..."]
+        for i in range(0, 3):
+            buttonDimension = [10 + (i * 180), 130, 151, 41]
+            btnObj = ButtonComponent(self.centralwidget, buttonDimension, i, labelList[i], self.mainLabel, self.msgList)
+            self.buttonObjs.append(btnObj)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 955, 26))
@@ -73,22 +83,4 @@ class Options_MainWindow(object):
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label1.setText(_translate("MainWindow", "Local DC++ Project"))
         self.label2.setText(_translate("MainWindow", "Select any one option from the following:"))
-        self.pushButton1.setText(_translate("MainWindow", "Send a Message"))
-        self.pushButton1.clicked.connect(self.sendMessage)
-        self.pushButton2.setText(_translate("MainWindow", "Send a File"))
-        self.pushButton2.clicked.connect(self.sendFile)
-        self.pushButton3.setText(_translate("MainWindow", "Exit"))
-        self.pushButton3.clicked.connect(self.exitWindow)
         self.mainLabel.setText(_translate("MainWindow", "HI, WELCOME TO THE LOCAL DC++ PROJECT."))
-
-    def sendMessage(self):
-        self.mainLabel.setText('Send Message Function initiated...')
-        self.mainLabel.adjustSize()
-
-    def sendFile(self):
-        self.mainLabel.setText('Send File Function initiated...')
-        self.mainLabel.adjustSize()
-
-    def exitWindow(self):
-        self.mainLabel.setText('Exit Server Function initiated...')
-        self.mainLabel.adjustSize()
