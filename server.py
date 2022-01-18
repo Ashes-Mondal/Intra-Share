@@ -1,22 +1,18 @@
-import os,sys,socket,json,time
+import json
+import os
+import socket
+import sys
+import time
 from queue import Queue
-from threading import Thread,Lock,current_thread
+from threading import Lock, Thread, current_thread
+
 from dotenv import load_dotenv
+
 load_dotenv()
 
-if __name__ == "server.server":
-    curr_dir = os.getcwd()
-    sys.path.append(os.path.join(curr_dir,"server"))
-    sys.path.append(os.path.join(curr_dir,"server/database"))
-    
-if __name__ == "__main__":
-    pardir = os.pardir
-    sys.path.append(os.path.abspath(pardir))
-    curr_dir = os.getcwd()
-    sys.path.append(os.path.join(curr_dir,"database"))
-
 from colors import bcolors
-from Server.functionalities import Functionalities,encodeJSON
+from Server.functionalities import Functionalities, encodeJSON
+
 
 class client_struct:
         def __init__(self,clientID:int,client:tuple,username:str,port2: int):

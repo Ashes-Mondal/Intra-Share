@@ -4,9 +4,9 @@ import socket
 import sys
 from getpass import getpass
 from threading import Event, Thread, current_thread    
-from Client.fileSharing import encodeJSON,FileSharingFunctionalities
+from Client.fileSharing import FileSharingFunctionalities
 from Client.serverInteraction import ServerInteraction,client_struct
-from Client.utils import getAppLastState,saveAppLastState
+from Client.utils import getAppLastState,saveAppLastState,encodeJSON
 from colors import bcolors
 
 
@@ -95,7 +95,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
         while True:
             try:
                 request = self.clientReq_Channel.get()
-                self.client.sendall(utils.encodeJSON(request))
+                self.client.sendall(encodeJSON(request))
                 self.clientReq_Channel.task_done()
             except Exception as error:
                 print(f'{bcolors["FAIL"]}[CLIENT]Failed to send request to server{bcolors["ENDC"]}')
@@ -142,7 +142,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             server_response = self._giveServerPorts(self.port1,self.port2)
             self.hostedFiles = server_response["fileList"]
             self.clientID = server_response["clientID"]
-            prevState = utils.getAppLastState(username=self.clientCredentials['username'],server_addr=self.server_addr)
+            prevState = getAppLastState(username=self.clientCredentials['username'],server_addr=self.server_addr)
             for client in prevState:
                 with self._lock:
                     obj = client_struct(client.clientID, client.username)
@@ -186,7 +186,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             raise error
     
     def closeApplication(self):
-        utils.saveAppLastState(self.clientCredentials['username'],self.server_addr,self.activeClients)
+        saveAppLastState(self.clientCredentials['username'],self.server_addr,self.activeClients)
         self.closeClient()
         self.closeEvent.set()
         
@@ -319,5 +319,4 @@ def main():
     InteractiveShell()
 
 if __name__ == "__main__":
-    sys.path.append('./')
     main()
