@@ -1,11 +1,44 @@
 import json
 import os
 import pickle
+import sys
 import threading
+from queue import Queue
+
+import tkinter as tk
+from tkinter import filedialog
 
 
 def encodeJSON(input: dict):
     return str(json.dumps(input)).encode()
+
+def getFiles():
+    root = tk.Tk()
+    root.withdraw()
+
+    filepaths = filedialog.askopenfilenames()
+    files = []
+    for filepath in filepaths:
+        filename = filepath.split("/")[-1]
+        filesize = os.path.getsize(filepath)
+        files.append((filename,filesize,filepath))
+    return files
+
+def getFile():
+    root = tk.Tk()
+    root.withdraw()
+
+    filepath = filedialog.askopenfilename()
+    filename = filepath.split("/")[-1]
+    filesize = os.path.getsize(filepath)
+    return (filename,filesize,filepath)
+
+def getDownloadDiectory():
+    root = tk.Tk()
+    root.withdraw()
+
+    dirpath = filedialog.askdirectory()
+    return dirpath
 
 class pickling_struct:
     def __init__(self,client):

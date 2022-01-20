@@ -8,3 +8,5 @@ PyQt5-Qt5==5.15.2
 PyQt5-sip==12.9.0
 python-dotenv==0.19.2
 six==1.16.0
+tabulate==0.8.9
+tqdm==4.62.3

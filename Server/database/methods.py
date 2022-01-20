@@ -115,7 +115,52 @@ class Database_Methods:
         
     
     def _getClientSharedFilelist(self,clientID: int):
-        return None
+        try:
+            operation = f'SELECT fileID,filename,filesize,path FROM files WHERE clientID ={clientID}'
+            curr = self.dbConn.cursor()
+            curr.execute(operation)
+            res = curr.fetchall()
+            return res or []
+        except mysql.connector.Error as error:
+            print(f'{bcolors["FAIL"]}[DATABASE] Failed to get client\'s shared filelist {bcolors["ENDC"]}')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            err_msg = f'INTERNAL SERVER ERROR'
+            raise Exception(err_msg)
+    
+    def _inserFilesToClientSharedFilelist(self,clientID: int,files: list):
+        try:
+            operation = f'INSERT INTO files (filename, filesize, path, clientID) VALUES (%s,%s,%s,%s)'
+            curr = self.dbConn.cursor()
+            fileIDs = []
+            for file in files:
+                filename, filesize, path = file
+                try:
+                    curr.execute(operation,(filename, filesize, path,clientID))
+                    fileID = curr.lastrowid
+                    fileIDs.append(fileID)
+                except Exception as error:
+                    print(f'{bcolors["FAIL"]}[DATABASE] Failed to insert client\'s file{bcolors["ENDC"]}')
+                    print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+                    fileIDs.append(None)
+            self.dbConn.commit()
+            return fileIDs
+        except mysql.connector.Error as error:
+            print(f'{bcolors["FAIL"]}[DATABASE] Failed to insert files {bcolors["ENDC"]}')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            err_msg = f'INTERNAL SERVER ERROR'
+            raise Exception(err_msg)
+        
+    def _deleteFile(self,fileID:int):
+        try:
+            operation = f'DELETE FROM files WHERE fileID = %s'
+            curr = self.dbConn.cursor()
+            curr.execute(operation,(fileID,))
+            self.dbConn.commit()
+        except mysql.connector.Error as error:
+            print(f'{bcolors["FAIL"]}[DATABASE] Failed to insert files {bcolors["ENDC"]}')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            err_msg = f'INTERNAL SERVER ERROR'
+            raise Exception(err_msg)
     
     def _getAllMembers(self):
         try:

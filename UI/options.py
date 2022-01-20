@@ -1,65 +1,100 @@
+from http import client
 from PyQt5 import QtCore, QtGui, QtWidgets
 
-class Options_MainWindow(object):
+class ButtonComponent:
+    def __init__(self, centralwidget, index, clientOBJ, user_label_heading) -> None:
+        self.user_label_heading = user_label_heading
+        self.label = clientOBJ.username
+        self.userButton = QtWidgets.QPushButton(centralwidget)
+        self.userButton.setGeometry(QtCore.QRect(30, 160 + (index * 90), 341, 61))
+        self.userButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.userButton.setStyleSheet("text-align: left;\n"
+        "font-size: 20px;\n"
+        "border: 2px solid black;\n"
+        "border-radius: 10px;\n"
+        "padding-left: 10;\n"
+        "padding-right: 10;\n"
+        "color: rgb(85, 0, 127);\n"
+        "background-color: rgb(85, 255, 255);")
+        self.userButton.setObjectName("userButton" + str(index + 1))
+
+        _translate = QtCore.QCoreApplication.translate
+        self.userButton.setText(_translate("MainWindow", self.label))
+        self.userButton.clicked.connect(self.setCurrentUser)
+    
+    def setCurrentUser(self):
+        self.user_label_heading.setText(self.label)
+        self.user_label_heading.adjustSize()
+
+class Options_MainWindow():
+    def __init__(self, clientIns) -> None:
+        self.clientIns = clientIns
+
     def setupUi(self, MainWindow):
+        # temp data from the server
+        # print(self.clientIns.activeClients) #dict
+        userDict = self.clientIns.activeClients
+
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(955, 710)
-        
+        MainWindow.resize(1183, 855)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
-        self.label1 = QtWidgets.QLabel(self.centralwidget)
-        self.label1.setGeometry(QtCore.QRect(10, 10, 391, 31))
-        font = QtGui.QFont()
-        font.setPointSize(16)
-        font.setUnderline(True)
-        self.label1.setFont(font)
-        self.label1.setObjectName("label1")
-        self.label2 = QtWidgets.QLabel(self.centralwidget)
-        self.label2.setGeometry(QtCore.QRect(10, 60, 391, 31))
+        self.label_heading = QtWidgets.QLabel(self.centralwidget)
+        self.label_heading.setGeometry(QtCore.QRect(260, 30, 641, 61))
         font = QtGui.QFont()
         font.setFamily("MS Sans Serif")
-        font.setPointSize(12)
+        font.setPointSize(17)
+        font.setBold(True)
+        font.setWeight(75)
+        self.label_heading.setFont(font)
+        self.label_heading.setStyleSheet("border: 2px solid red;\n"
+        "border-radius: 10px;\n"
+        "padding-left: 10;\n"
+        "padding-right: 10;\n"
+        "color: rgb(85, 255, 255);\n"
+        "background-color: rgb(85, 0, 127);")
+        self.label_heading.setObjectName("label_heading")
+        self.user_label_heading = QtWidgets.QLabel(self.centralwidget)
+        self.user_label_heading.setGeometry(QtCore.QRect(490, 110, 201, 41))
+        font = QtGui.QFont()
+        font.setFamily("MS Shell Dlg 2")
+        font.setPointSize(14)
+        font.setBold(True)
         font.setUnderline(False)
-        self.label2.setFont(font)
-        self.label2.setObjectName("label2")
-        self.pushButton1 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton1.setGeometry(QtCore.QRect(10, 130, 151, 41))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(10)
-        font.setBold(True)
         font.setWeight(75)
-        self.pushButton1.setFont(font)
-        self.pushButton1.setObjectName("pushButton1")
-        self.pushButton2 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton2.setGeometry(QtCore.QRect(190, 130, 151, 41))
+        self.user_label_heading.setFont(font)
+        self.user_label_heading.setStyleSheet("color: rgb(85, 0, 127)")
+        self.user_label_heading.setObjectName("user_label_heading")
+        self.line = QtWidgets.QFrame(self.centralwidget)
+        self.line.setGeometry(QtCore.QRect(390, 90, 20, 731))
+        self.line.setFrameShape(QtWidgets.QFrame.VLine)
+        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line.setObjectName("line")
+        self.label_heading_4 = QtWidgets.QLabel(self.centralwidget)
+        self.label_heading_4.setGeometry(QtCore.QRect(30, 110, 311, 41))
         font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(10)
+        font.setFamily("MS Shell Dlg 2")
+        font.setPointSize(14)
         font.setBold(True)
-        font.setWeight(75)
-        self.pushButton2.setFont(font)
-        self.pushButton2.setObjectName("pushButton2")
-        self.pushButton3 = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton3.setGeometry(QtCore.QRect(370, 130, 151, 41))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(10)
-        font.setBold(True)
-        font.setWeight(75)
-        self.pushButton3.setFont(font)
-        self.pushButton3.setObjectName("pushButton3")
-        self.mainLabel = QtWidgets.QLabel(self.centralwidget)
-        self.mainLabel.setGeometry(QtCore.QRect(10, 220, 461, 31))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(12)
         font.setUnderline(False)
-        self.mainLabel.setFont(font)
-        self.mainLabel.setObjectName("mainLabel")
+        font.setWeight(75)
+        self.label_heading_4.setFont(font)
+        self.label_heading_4.setStyleSheet("color: rgb(85, 0, 127)")
+        self.label_heading_4.setObjectName("label_heading_4")
+
+        self.buttonObjs = []
+        index = 0
+        for clientID,clientOBJ in userDict.items():
+            btnObj = ButtonComponent(self.centralwidget, index, clientOBJ, self.user_label_heading)
+            self.buttonObjs.append(btnObj)
+            index += 1
+        # for i in range(0, len(userlist)):
+        #     btnObj = ButtonComponent(self.centralwidget, i, str(i + 1) + ". " + userlist[i]["username"], self.user_label_heading)
+        #     self.buttonObjs.append(btnObj)
+
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 955, 26))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 1183, 26))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -72,24 +107,6 @@ class Options_MainWindow(object):
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label1.setText(_translate("MainWindow", "Local DC++ Project"))
-        self.label2.setText(_translate("MainWindow", "Select any one option from the following:"))
-        self.pushButton1.setText(_translate("MainWindow", "Send a Message"))
-        self.pushButton1.clicked.connect(self.sendMessage)
-        self.pushButton2.setText(_translate("MainWindow", "Send a File"))
-        self.pushButton2.clicked.connect(self.sendFile)
-        self.pushButton3.setText(_translate("MainWindow", "Exit"))
-        self.pushButton3.clicked.connect(self.exitWindow)
-        self.mainLabel.setText(_translate("MainWindow", "HI, WELCOME TO THE LOCAL DC++ PROJECT."))
-
-    def sendMessage(self):
-        self.mainLabel.setText('Send Message Function initiated...')
-        self.mainLabel.adjustSize()
-
-    def sendFile(self):
-        self.mainLabel.setText('Send File Function initiated...')
-        self.mainLabel.adjustSize()
-
-    def exitWindow(self):
-        self.mainLabel.setText('Exit Server Function initiated...')
-        self.mainLabel.adjustSize()
+        self.label_heading.setText(_translate("MainWindow", "WELCOME TO THE LOCAL DC++ PROJECT"))
+        self.user_label_heading.setText(_translate("MainWindow", "<Selected User>"))
+        self.label_heading_4.setText(_translate("MainWindow", "Users Available Right Now"))

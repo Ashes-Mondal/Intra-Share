@@ -1,4 +1,6 @@
 .vscode
 .env
+*.txt
 bin
+downloads
 __pycache__
