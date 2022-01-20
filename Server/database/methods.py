@@ -154,7 +154,7 @@ class Database_Methods:
         try:
             operation = f'DELETE FROM files WHERE fileID = %s'
             curr = self.dbConn.cursor()
-            curr.execute(operation,fileID)
+            curr.execute(operation,(fileID,))
             self.dbConn.commit()
         except mysql.connector.Error as error:
             print(f'{bcolors["FAIL"]}[DATABASE] Failed to insert files {bcolors["ENDC"]}')
