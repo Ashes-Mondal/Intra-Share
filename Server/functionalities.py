@@ -151,6 +151,36 @@ class Functionalities(Database_Methods):
                     else:
                         server_response = {"type":"client_request_response_GP","data":None,"error":"Failed client went offline!"}
                     self.allClients[clientID].sendQueue.put(server_response)
+                
+                ##get client's files sharing list
+                elif client_request["type"] == "get_file_list":
+                    ID = client_request["data"]
+                    try:
+                        fileList = self._getClientSharedFilelist(clientID=ID)
+                        server_response = {"type":"client_request_response_DL","data":fileList,"error":None}
+                    except Exception as e:
+                        server_response = {"type":"client_request_response_DL","data":None,"error":str(error)}
+                    self.allClients[clientID].sendQueue.put(server_response)
+                    
+                ##insert new files to  client's sharing list
+                elif client_request["type"] == "insert_new_files":
+                    files = client_request["data"]
+                    try:
+                        fileIDs = self._inserFilesToClientSharedFilelist(clientID=clientID, files=files)
+                        server_response = {"type":"client_request_response_INF","data":fileIDs,"error":None}
+                    except Exception as error:
+                        server_response = {"type":"client_request_response_INF","data":None,"error":str(error)}
+                    self.allClients[clientID].sendQueue.put(server_response)
+                    
+                ##delete listed file of client
+                elif client_request["type"] == "delete_file":
+                    fileID = client_request["data"]
+                    try:
+                        self._deleteFile(fileID)
+                        server_response = {"type":"client_request_response_DF","data":"Success","error":None}
+                    except Exception as error:
+                        server_response = {"type":"client_request_response_DF","data":None,"error":str(error)}
+                    self.allClients[clientID].sendQueue.put(server_response)
             except socket.error as error:
                 print(f'{bcolors["FAIL"]}[SERVER]Failed to keep listening to the client!{bcolors["ENDC"]}{bcolors["UNDERLINE"]}{self.allClients[clientID].clientIP}{bcolors["ENDC"]}')
                 print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')

@@ -3,17 +3,16 @@ import os
 import socket
 import sys
 from getpass import getpass
-from threading import Event, Thread, current_thread    
+from threading import Event, Thread, current_thread
+
+from tabulate import tabulate
+
 from Client.fileSharing import FileSharingFunctionalities
-from Client.serverInteraction import ServerInteraction,client_struct
-from Client.utils import getAppLastState,saveAppLastState,encodeJSON
+from Client.serverInteraction import ServerInteraction, client_struct
+from Client.utils import encodeJSON, getAppLastState, saveAppLastState,getDownloadDiectory,getFiles
 from colors import bcolors
 
-
-
-
-
-SERVER_IP = '192.168.x.xxx'
+SERVER_IP = '192.168.29.39'
 SERVER_PORT = 9999
 SERVER_PASSWORD = 'qwerty'
 USER_CREDENTIALS = {
@@ -84,6 +83,12 @@ class Client(ServerInteraction,FileSharingFunctionalities):
                     self.updateUsernameRes_Channel.put(server_response)
                 elif server_response['type'] == 'client_request_response_GP':
                     self.getPortRes_Channel.put(server_response)
+                elif server_response['type'] == 'client_request_response_DL':
+                    self.getFileListRes_Channel.put(server_response)
+                elif server_response['type'] == 'client_request_response_INF':
+                    self.insertFilesRes_Channel.put(server_response)
+                elif server_response['type'] == 'client_request_response_DF':
+                    self.deleteFileRes_Channel.put(server_response)
             except socket.error as error:
                 print(f'{bcolors["FAIL"]}[CLIENT]Failed to listen to server{bcolors["ENDC"]}')
                 print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
@@ -124,6 +129,45 @@ class Client(ServerInteraction,FileSharingFunctionalities):
         print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}clientIP:{self.clientIP} port1:{self.port1} port2:{self.port2}')
     
     ## Public methods
+    def downloadFile(self,clientID:int,fileID:int,filename: str,filesize:int):
+        ##Select download directory
+        download_directory = getDownloadDiectory()
+        
+        ##manupulate chunks
+        start = 0
+        end = (filesize//4096) + 1 if (filesize%4096) else 0
+        
+        ##get address from server ,create socket and then establish connection
+        clientAddr = self.getAddrOfClient(clientID)
+        conn = socket.socket()
+        conn.settimeout(5)
+        conn.connect(clientAddr)
+        conn.settimeout(None)
+        
+        ##send download_request
+        request = {"type":"download_request","data":{"fileID":fileID,"start":start,"end":end}}
+        conn.sendall(encodeJSON(request))
+
+        ##waiting for the response
+        response = str(conn.recv(4096),'utf-8')
+        if len(response) == 0:
+            print(f'{bcolors["FAIL"]}[CLIENT]Failed to download file := "{filename}"{bcolors["ENDC"]}')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} Client went offline')
+            conn.close()
+            raise Exception(f'Failed to download file, client went offline')
+        response = json.loads(response)
+        if response["error"]!=None:
+            raise Exception(response["error"])
+        
+        
+        t1 = Thread(target=self._receiveFile,args=(conn,start,end,filename,filesize,download_directory),daemon=True,name=f'_receiveFile_{filename}')
+        t2 = Thread(target=self._clientInteraction,args=(conn,),daemon=True,name=f'_clientInteraction_{filename}')
+        t1.start()
+        t2.start()
+        
+        t1.join()
+        conn.close()
+    
     def closeClient(self):
         print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Closing connection with server...')
         self.client.close()
@@ -140,7 +184,11 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             self.__connectToServer()
             self._login()
             server_response = self._giveServerPorts(self.port1,self.port2)
-            self.hostedFiles = server_response["fileList"]
+            ##set filelist in a dictionary
+            for file in server_response["fileList"]:
+                fileID,filename,filePath,fileSize = file
+                self.hostedFiles[fileID] = (filename,filePath,fileSize)
+                
             self.clientID = server_response["clientID"]
             prevState = getAppLastState(username=self.clientCredentials['username'],server_addr=self.server_addr)
             for client in prevState:
@@ -221,20 +269,71 @@ class Client(ServerInteraction,FileSharingFunctionalities):
         except Exception as error:
             print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error sending message!')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
-            
+            raise error
+    
     def getAddrOfClient(self,clientID:int):
-        if clientID in self.activeClients.keys():
-            if self.activeClients[clientID].clientIP is None:
-                request = {"type":"get_addr","data":clientID}
-                self.clientReq_Channel.put(request)
-                ##Waiting for response from server
-                server_response = self.getPortRes_Channel.get(timeout=5)
-                self.getPortRes_Channel.task_done()
-                return server_response["data"] if server_response["data"]==None else tuple(server_response["data"])
+            request = {"type":"get_addr","data":clientID}
+            self.clientReq_Channel.put(request)
+            ##Waiting for response from server
+            server_response = self.getPortRes_Channel.get(timeout=5)
+            self.getPortRes_Channel.task_done()
+            if server_response["data"]==None:
+                raise Exception(f'{clientID} not online!')
             else:
-                return (self.activeClients[clientID].clientIP,self.activeClients[clientID].port2)
-        else:
-            raise Exception(f'{clientID} not online!')
+                return tuple(server_response["data"])
+    
+    def getFileListOfClient(self,clientID:int):
+        request = {"type":"get_file_list","data":clientID}
+        self.clientReq_Channel.put(request)
+        ##Waiting for response from server
+        server_response = self.getFileListRes_Channel.get(timeout=5)
+        self.getFileListRes_Channel.task_done()
+        if server_response["data"] == None:
+            print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error getting file list!')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {server_response["error"]}')
+            raise Exception(f'{server_response["error"]}')
+        with self._lock:
+            for file in server_response["data"]:
+                fileID,filename,filesize,filepath= tuple(file)
+                self.displayFiles[fileID] = (filename,filesize)
+        
+    
+    def insertFiles(self):
+        files = getFiles()
+        request = {"type":"insert_new_files","data":files}
+        self.clientReq_Channel.put(request)
+        ##Waiting for response from server
+        server_response = self.insertFilesRes_Channel.get(timeout=5)
+        self.insertFilesRes_Channel.task_done()
+        if server_response["data"] == None:
+            print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error inserting files')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {server_response["error"]}')
+            raise Exception(f'{server_response["error"]}')
+        failed = []
+        with self._lock:
+            for i,fileID in enumerate(server_response["data"]):
+                if fileID == None:
+                    failed.append(files[i])
+                    continue
+                self.hostedFiles[fileID] = files[i]
+        if len(failed):
+            print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Failed to insert {len(failed)} files.')
+            raise Exception(failed)
+        
+    def deleteFile(self,fileID:int):
+        if fileID not in self.hostedFiles.keys():
+            raise Exception("No such fileID found!")
+        request = {"type":"delete_file","data":fileID}
+        self.clientReq_Channel.put(request)
+        ##Waiting for response from server
+        server_response = self.deleteFileRes_Channel.get(timeout=5)
+        self.deleteFileRes_Channel.task_done()
+        with self._lock:
+            del self.hostedFiles[fileID]
+        if server_response["data"] == None:
+            print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error deleting the file')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {server_response["error"]}')
+            raise Exception(f'{server_response["error"]}')
 
 class InteractiveShell(Client):
     def __init__(self):
@@ -253,14 +352,49 @@ class InteractiveShell(Client):
             self.closeEvent.wait()
             sys.exit()
     
-    def __displayActiveClients(self):
+    def __displayClients(self):
+        print(self.activeClients)
         if len(self.activeClients) == 0:
             print(f'{bcolors["OKBLUE"]}No other active clients found!{bcolors["ENDC"]}')
         else:
-            print(f'{bcolors["OKCYAN"]}<------- Active Clients ------>{bcolors["ENDC"]}')
-            print(f'{bcolors["OKGREEN"]}ClientID            username        Status{bcolors["ENDC"]}')
+            table = []
+            headers = [f'{bcolors["OKGREEN"]}ID{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}Username{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}Status{bcolors["ENDC"]}']
             for clientID,clientOBJ in self.activeClients.items():
-                print(f'    {clientID}                {clientOBJ.username}          {bcolors["OKCYAN"] if clientOBJ.online else bcolors["FAIL"]}{"ONLINE" if clientOBJ.online else "OFFLINE"}{bcolors["ENDC"]}')
+                if clientOBJ.online:
+                    status = f'{bcolors["OKGREEN"]}Online{bcolors["ENDC"]}'
+                else:
+                    status = f'{bcolors["FAIL"]}Offline{bcolors["ENDC"]}'
+                table.append([clientID,clientOBJ.username,status])
+            print(tabulate(table, headers, tablefmt="presto"))
+    
+    def __displayFileList(self,clientID:int):
+        if clientID not in self.activeClients.keys():
+            raise Exception("ClientID not exists!")
+        if self.activeClients[clientID].online == False:
+            raise Exception("Client not online")
+        self.getFileListOfClient(clientID)
+        if len(self.displayFiles) == 0:
+            print(f'{bcolors["OKBLUE"]}No files found!{bcolors["ENDC"]}')
+        else:
+            table = []
+            headers = [f'{bcolors["OKGREEN"]}ID{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}fileID{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}Filename{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}size(bytes){bcolors["ENDC"]}']
+
+            for fileID,fileDetails in self.displayFiles.items():
+                filename,filesize = fileDetails
+                table.append([clientID,fileID,filename,filesize])
+            print(tabulate(table, headers, tablefmt="presto"))
+    
+    def __displaySharedFileList(self):
+        if len(self.hostedFiles) == 0:
+            print(f'{bcolors["OKBLUE"]}No files found!{bcolors["ENDC"]}')
+        else:
+            table = []
+            headers = [f'{bcolors["OKGREEN"]}fileID{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}Filename{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}size(bytes){bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}Path{bcolors["ENDC"]}']
+
+            for fileID,fileDetails in self.hostedFiles.items():
+                filename,filesize,path = fileDetails
+                table.append([fileID,filename,filesize,path])
+            print(tabulate(table, headers, tablefmt="presto"))
     
     def __startSendingMessages(self,clientID: int):
         if clientID not in self.activeClients.keys():
@@ -290,7 +424,7 @@ class InteractiveShell(Client):
             if len(command) == 0:
                 continue
             if command == "list":
-                self.__displayActiveClients()
+                self.__displayClients()
             elif 'select' in command:
                 clientID = command.split(" ")[1]
                 if clientID.isdigit():
@@ -311,12 +445,43 @@ class InteractiveShell(Client):
                     print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} {res}')
                 except Exception as error:
                     print(f'"{command}" is an invalid command.')
-                
+            elif "get filelist" in command:
+                try:
+                    clientID = int(command.split(" ")[2])
+                    self.__displayFileList(clientID)
+                except Exception as error:
+                    print(f'"{command}" is an invalid command.')
+            elif command == "display shared filelist":
+                try:
+                    self.__displaySharedFileList()
+                except Exception as error:
+                    print(f'"{command}" is an invalid command.')
+            elif "download file" in command:
+                try:
+                    clientID = int(command.split(" ")[2])
+                    fileID = int(command.split(" ")[3])
+                    filename,filesize = self.displayFiles[fileID]
+                    print(clientID, fileID, filename, filesize)
+                    self.downloadFile(clientID, fileID, filename, filesize)
+                except Exception as error:
+                    print(f'"{command}" is an invalid command.',error)
+            elif command =="insert files":
+                try:
+                    self.insertFiles()
+                except Exception as error:
+                    print(f'"{command}" is an invalid command.',error)
+            elif "delete file" in command:
+                try:
+                    fileID = int(command.split(" ")[2])
+                    self.deleteFile(fileID)
+                except Exception as error:
+                    print(f'"{command}" is an invalid command.',error)
             else:
                 print(f'"{command}" is an invalid command.')
 
-def main():
-    InteractiveShell()
 
 if __name__ == "__main__":
-    main()
+    # from PyQt5.QtWidgets import QApplication
+    # app = QApplication(sys.argv)
+    InteractiveShell()
+    # QApplication.quit()
