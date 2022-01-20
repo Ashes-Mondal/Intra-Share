@@ -231,7 +231,7 @@ class Ui_MainWindow():
                 )
                 # move to main application file
                 self.window = QtWidgets.QMainWindow()
-                self.ui = Options_MainWindow()
+                self.ui = Options_MainWindow(self.clientIns)
                 self.ui.setupUi(self.window)
                 self.MainWindow.hide()
                 self.window.show()
