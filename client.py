@@ -83,12 +83,14 @@ class Client(ServerInteraction,FileSharingFunctionalities):
                     self.updateUsernameRes_Channel.put(server_response)
                 elif server_response['type'] == 'client_request_response_GP':
                     self.getPortRes_Channel.put(server_response)
-                elif server_response['type'] == 'client_request_response_DL':
+                elif server_response['type'] == 'client_request_response_GF':
                     self.getFileListRes_Channel.put(server_response)
                 elif server_response['type'] == 'client_request_response_INF':
                     self.insertFilesRes_Channel.put(server_response)
                 elif server_response['type'] == 'client_request_response_DF':
                     self.deleteFileRes_Channel.put(server_response)
+                elif server_response['type'] == 'client_request_response_SF':
+                    self.searchFileRes_Channel.put(server_response)
             except socket.error as error:
                 print(f'{bcolors["FAIL"]}[CLIENT]Failed to listen to server{bcolors["ENDC"]}')
                 print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
@@ -130,10 +132,14 @@ class Client(ServerInteraction,FileSharingFunctionalities):
     
     ## Public methods
     def downloadFile(self,clientID:int,fileID:int,filename: str,filesize:int):
+        ##check if client is online
+        if self.activeClients[clientID].online == False:
+            raise Exception("Client Offline!")
+        
         ##Select download directory
         download_directory = getDownloadDiectory()
         
-        ##manupulate chunks
+        ##manipulate chunks
         start = 0
         end = (filesize//4096) + 1 if (filesize%4096) else 0
         
@@ -186,7 +192,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             server_response = self._giveServerPorts(self.port1,self.port2)
             ##set filelist in a dictionary
             for file in server_response["fileList"]:
-                fileID,filename,filePath,fileSize = file
+                fileID,filename,filePath,fileSize,ID,username,status = file
                 self.hostedFiles[fileID] = (filename,filePath,fileSize)
                 
             self.clientID = server_response["clientID"]
@@ -283,6 +289,8 @@ class Client(ServerInteraction,FileSharingFunctionalities):
                 return tuple(server_response["data"])
     
     def getFileListOfClient(self,clientID:int):
+        if clientID not in self.activeClients.keys():
+            raise Exception("No such client exists!")
         request = {"type":"get_file_list","data":clientID}
         self.clientReq_Channel.put(request)
         ##Waiting for response from server
@@ -293,10 +301,12 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {server_response["error"]}')
             raise Exception(f'{server_response["error"]}')
         with self._lock:
-            for file in server_response["data"]:
-                fileID,filename,filesize,filepath= tuple(file)
-                self.displayFiles[fileID] = (filename,filesize)
-        
+            self.displayFiles.clear()
+            if len(server_response["data"]):
+                for file in server_response["data"]:
+                    fileID,filename,filesize,filepath,ID,username,status= file
+                    self.displayFiles[fileID] = (filename,filesize,ID,username,status)
+        return self.displayFiles
     
     def insertFiles(self):
         files = getFiles()
@@ -328,18 +338,47 @@ class Client(ServerInteraction,FileSharingFunctionalities):
         ##Waiting for response from server
         server_response = self.deleteFileRes_Channel.get(timeout=5)
         self.deleteFileRes_Channel.task_done()
-        with self._lock:
-            del self.hostedFiles[fileID]
         if server_response["data"] == None:
             print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error deleting the file')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {server_response["error"]}')
             raise Exception(f'{server_response["error"]}')
+        with self._lock:
+            del self.hostedFiles[fileID]
+    
+    def searchFiles(self,filename: str):
+        request = {"type":"search_file","data":filename}
+        self.clientReq_Channel.put(request)
+        ##Waiting for response from server
+        server_response = self.searchFileRes_Channel.get(timeout=5)
+        self.searchFileRes_Channel.task_done()
+        if server_response["data"] == None:
+            print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error deleting the file')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {server_response["error"]}')
+            raise Exception(f'{server_response["error"]}')
+        with self._lock:
+            self.displayFiles.clear()
+            if len(server_response["data"]):
+                for file in server_response["data"]:
+                    fileID,filename,filesize,ID,username,status= file
+                    self.displayFiles[fileID] = (filename,filesize,ID,username,status)
+        return self.displayFiles
+    
+    def searchUsers(self,search: str):
+        lst = []
+        for ClientID,clientOBJ in self.activeClients.items():
+            if clientOBJ.username == self.clientCredentials["username"]:
+                continue
+            username = str.lower(clientOBJ.username) 
+            if str.lower(search) in username:
+                lst.append((clientOBJ.clientID,clientOBJ.username,clientOBJ.online))
+        return lst
 
 class InteractiveShell(Client):
     def __init__(self):
             Client.__init__(self)
             try:
                 USER_CREDENTIALS["username"] = input("USERNAME:")
+                USER_CREDENTIALS["password"] = getpass(prompt="PASSWORD:")
                 self.startClient(server_addr=(SERVER_IP,SERVER_PORT),server_password=SERVER_PASSWORD,clientCredentials=USER_CREDENTIALS)
             except Exception as e:
                 sys.exit()
@@ -353,12 +392,15 @@ class InteractiveShell(Client):
             sys.exit()
     
     def __displayClients(self):
-        print(self.activeClients)
         if len(self.activeClients) == 0:
             print(f'{bcolors["OKBLUE"]}No other active clients found!{bcolors["ENDC"]}')
         else:
             table = []
-            headers = [f'{bcolors["OKGREEN"]}ID{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}Username{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}Status{bcolors["ENDC"]}']
+            headers = [
+                f'{bcolors["OKGREEN"]}ID{bcolors["ENDC"]}',
+                f'{bcolors["OKGREEN"]}Username{bcolors["ENDC"]}',
+                f'{bcolors["OKGREEN"]}Status{bcolors["ENDC"]}'
+            ]
             for clientID,clientOBJ in self.activeClients.items():
                 if clientOBJ.online:
                     status = f'{bcolors["OKGREEN"]}Online{bcolors["ENDC"]}'
@@ -367,33 +409,85 @@ class InteractiveShell(Client):
                 table.append([clientID,clientOBJ.username,status])
             print(tabulate(table, headers, tablefmt="presto"))
     
-    def __displayFileList(self,clientID:int):
-        if clientID not in self.activeClients.keys():
-            raise Exception("ClientID not exists!")
-        if self.activeClients[clientID].online == False:
-            raise Exception("Client not online")
-        self.getFileListOfClient(clientID)
-        if len(self.displayFiles) == 0:
-            print(f'{bcolors["OKBLUE"]}No files found!{bcolors["ENDC"]}')
-        else:
-            table = []
-            headers = [f'{bcolors["OKGREEN"]}ID{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}fileID{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}Filename{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}size(bytes){bcolors["ENDC"]}']
+    # def __displayFileList(self,clientID:int):
+    #     # if clientID not in self.activeClients.keys():
+    #     #     raise Exception("ClientID not exists!")
+    #     # if self.activeClients[clientID].online == False:
+    #     #     raise Exception("Client not online")
+    #     self.getFileListOfClient(clientID)
+    #     if len(self.displayFiles) == 0:
+    #         print(f'{bcolors["OKBLUE"]}No files found!{bcolors["ENDC"]}')
+    #     else:
+    #         table = []
+    #         headers = [
+    #             f'{bcolors["OKGREEN"]}ID{bcolors["ENDC"]}',
+    #             f'{bcolors["OKGREEN"]}fileID{bcolors["ENDC"]}',
+    #             f'{bcolors["OKGREEN"]}Filename{bcolors["ENDC"]}',
+    #             f'{bcolors["OKGREEN"]}size(bytes){bcolors["ENDC"]}'
+    #         ]
 
-            for fileID,fileDetails in self.displayFiles.items():
-                filename,filesize = fileDetails
-                table.append([clientID,fileID,filename,filesize])
-            print(tabulate(table, headers, tablefmt="presto"))
+    #         for fileID,fileDetails in self.displayFiles.items():
+    #             filename,filesize,ID,username,status = fileDetails
+    #             table.append([ID,fileID,filename,filesize])
+    #         print(tabulate(table, headers, tablefmt="presto"))
     
     def __displaySharedFileList(self):
         if len(self.hostedFiles) == 0:
             print(f'{bcolors["OKBLUE"]}No files found!{bcolors["ENDC"]}')
         else:
             table = []
-            headers = [f'{bcolors["OKGREEN"]}fileID{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}Filename{bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}size(bytes){bcolors["ENDC"]}',f'{bcolors["OKGREEN"]}Path{bcolors["ENDC"]}']
+            headers = [
+                f'{bcolors["OKGREEN"]}fileID{bcolors["ENDC"]}',
+                f'{bcolors["OKGREEN"]}filename{bcolors["ENDC"]}',
+                f'{bcolors["OKGREEN"]}size(bytes){bcolors["ENDC"]}',
+                f'{bcolors["OKGREEN"]}location{bcolors["ENDC"]}'
+            ]
 
             for fileID,fileDetails in self.hostedFiles.items():
                 filename,filesize,path = fileDetails
                 table.append([fileID,filename,filesize,path])
+            print(tabulate(table, headers, tablefmt="presto"))
+            
+    def __showFoundFiles(self):
+        if len(self.displayFiles) == 0:
+            print(f'{bcolors["OKBLUE"]}No files found!{bcolors["ENDC"]}')
+        else:
+            table = []
+            headers = [
+                f'{bcolors["OKGREEN"]}fileID{bcolors["ENDC"]}',
+                f'{bcolors["OKGREEN"]}filename{bcolors["ENDC"]}',
+                f'{bcolors["OKGREEN"]}size(bytes){bcolors["ENDC"]}',
+                f'{bcolors["OKGREEN"]}ID{bcolors["ENDC"]}' ,
+                f'{bcolors["OKGREEN"]}username{bcolors["ENDC"]}',
+                f'{bcolors["OKGREEN"]}status{bcolors["ENDC"]}'
+            ]
+
+            for fileID,fileOBJ in self.displayFiles.items():
+                filename,filesize,ID,username,status = fileOBJ
+                if status:
+                    status = f'{bcolors["OKGREEN"]}Online{bcolors["ENDC"]}'
+                else:
+                    status = f'{bcolors["FAIL"]}Offline{bcolors["ENDC"]}'
+                table.append([fileID,filename,filesize,ID,username,status])
+            print(tabulate(table, headers, tablefmt="presto"))
+            
+    def __showFoundUsers(self,users: list):
+        if len(users) == 0:
+            print(f'{bcolors["OKBLUE"]}No users found!{bcolors["ENDC"]}')
+        else:
+            table = []
+            headers = [
+                f'{bcolors["OKGREEN"]}ID{bcolors["ENDC"]}' ,
+                f'{bcolors["OKGREEN"]}username{bcolors["ENDC"]}',
+                f'{bcolors["OKGREEN"]}status{bcolors["ENDC"]}'
+            ]
+            for user in users:
+                ID,username,status = user
+                if status:
+                    status = f'{bcolors["OKGREEN"]}Online{bcolors["ENDC"]}'
+                else:
+                    status = f'{bcolors["FAIL"]}Offline{bcolors["ENDC"]}'
+                table.append((ID,username,status))
             print(tabulate(table, headers, tablefmt="presto"))
     
     def __startSendingMessages(self,clientID: int):
@@ -425,7 +519,7 @@ class InteractiveShell(Client):
                 continue
             if command == "list":
                 self.__displayClients()
-            elif 'select' in command:
+            elif 'message' in command:
                 clientID = command.split(" ")[1]
                 if clientID.isdigit():
                     try:
@@ -445,43 +539,55 @@ class InteractiveShell(Client):
                     print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} {res}')
                 except Exception as error:
                     print(f'"{command}" is an invalid command.')
-            elif "get filelist" in command:
+            elif "get files" in command:
                 try:
                     clientID = int(command.split(" ")[2])
-                    self.__displayFileList(clientID)
+                    self.getFileListOfClient(clientID)
+                    self.__showFoundFiles()
                 except Exception as error:
                     print(f'"{command}" is an invalid command.')
-            elif command == "display shared filelist":
+            elif command == "show my files":
                 try:
                     self.__displaySharedFileList()
                 except Exception as error:
                     print(f'"{command}" is an invalid command.')
             elif "download file" in command:
                 try:
-                    clientID = int(command.split(" ")[2])
-                    fileID = int(command.split(" ")[3])
-                    filename,filesize = self.displayFiles[fileID]
-                    print(clientID, fileID, filename, filesize)
-                    self.downloadFile(clientID, fileID, filename, filesize)
+                    fileID = int(command.split(" ")[2])
+                    if fileID not in self.displayFiles.keys():
+                        raise Exception("No such file exists!")
+                    filename,filesize,ID,username,status = self.displayFiles[fileID]
+                    self.downloadFile(ID, fileID, filename, int(filesize))
                 except Exception as error:
-                    print(f'"{command}" is an invalid command.',error)
+                    print(f'"{command}" is an invalid command.',str(error))
             elif command =="insert files":
                 try:
                     self.insertFiles()
                 except Exception as error:
-                    print(f'"{command}" is an invalid command.',error)
+                    print(f'"{command}" is an invalid command.',str(error))
             elif "delete file" in command:
                 try:
                     fileID = int(command.split(" ")[2])
                     self.deleteFile(fileID)
                 except Exception as error:
-                    print(f'"{command}" is an invalid command.',error)
+                    print(f'"{command}" is an invalid command.',str(error))
+            elif "search file" in command:
+                try:
+                    filename = command[12:]
+                    self.searchFiles(filename)
+                    self.__showFoundFiles()
+                except Exception as error:
+                    print(f'"{command}" is an invalid command.',str(error))
+            elif "search user" in command:
+                try:
+                    search = command[12:]
+                    res = self.searchUsers(search)
+                    self.__showFoundUsers(res)
+                except Exception as error:
+                    print(f'"{command}" is an invalid command.',str(error))
             else:
                 print(f'"{command}" is an invalid command.')
 
 
 if __name__ == "__main__":
-    # from PyQt5.QtWidgets import QApplication
-    # app = QApplication(sys.argv)
     InteractiveShell()
-    # QApplication.quit()

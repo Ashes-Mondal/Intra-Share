@@ -88,8 +88,8 @@ class FileSharingFunctionalities:
                     res = {"type":"response","data":None,"error":"Invalid request,closing the connection"}
                     conn.sendall(encodeJSON(res))
             except socket.error as error:
-                print(f'{bcolors["FAIL"]}[CLIENT]Failed to listen to {addr}{bcolors["ENDC"]}')
-                print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+                # print(f'{bcolors["FAIL"]}[CLIENT]Failed to listen to {addr}{bcolors["ENDC"]}')
+                # print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
                 self._closeFileClient(client)
 
     def _sendClientFile(self,client: tuple,data: dict):

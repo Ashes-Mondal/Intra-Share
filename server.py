@@ -102,6 +102,9 @@ class Server(Functionalities):
                 worker_thread2 = Thread(target=self._sendResponseToClients,args=(clientID,),name=f'_sendResponseToClients{clientID}')
                 worker_thread2.start()
                 
+                worker_thread3= Thread(target=self._heatbeatCheck,args=(clientID,),name=f'__heatBeatFunction{clientID}')
+                worker_thread3.start()
+                
             except socket.error as error:
                 print(f'{bcolors["FAIL"]}[SERVER]Accepting connection error{bcolors["ENDC"]}')
                 print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
@@ -120,9 +123,9 @@ class Server(Functionalities):
         t1 = Thread(target=self.__acceptConnections,daemon=True,name=f'__acceptConnections{self.port}')
         t1.start()    
         
-        #Thread2:Send updated self.allclient to all active clients
-        t2 = Thread(target=self._sendUpdatedClientList,args=(5,),daemon=True,name='_sendUpdatedClientList')
-        t2.start()    
+        # #Thread2:Send updated self.allclient to all active clients
+        # t2 = Thread(target=self._sendUpdatedClientList,args=(5,),daemon=True,name='_sendUpdatedClientList')
+        # t2.start()    
     
     def closeServer(self):
         print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}Closing server socket...')

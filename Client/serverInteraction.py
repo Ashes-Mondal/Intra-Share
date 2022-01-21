@@ -48,6 +48,7 @@ class ServerInteraction:
         self.getFileListRes_Channel = Queue()
         self.insertFilesRes_Channel = Queue()
         self.deleteFileRes_Channel = Queue()
+        self.searchFileRes_Channel = Queue()
         #<-----------******************---------->
             
         self._lock = Lock()

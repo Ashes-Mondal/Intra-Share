@@ -46,7 +46,6 @@ class pickling_struct:
         self.username = client.username
         self.unread_messages = client.unread_messages
         self.filesTaking = client.filesTaking
-        self.filesGiving = client.filesTaking
     
     def debug(self):
         print(f'clientID: {self.clientID}')
@@ -63,7 +62,7 @@ def saveAppLastState(username,server_addr,activeClients: dict):
         pickle.dump(server_addr,f)
         for k,client in activeClients.items():
             # client.debug()
-            if len(client.unread_messages) == 0 and len(client.filesGiving) == 0 and len(client.filesTaking) == 0:
+            if len(client.unread_messages) == 0 and len(client.filesTaking) == 0:
                 continue
             obj = pickling_struct(client)
             pickle.dump(obj,f)
