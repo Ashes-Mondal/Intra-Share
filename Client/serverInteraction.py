@@ -12,14 +12,8 @@ class client_struct:
         self.unread_messages =[]
         
         ##File sharing attributes
-        self.clientIP = None
-        self.port2 = None
         self.filesTaking = []
         self.filesGiving = []
-        ##Channel
-        self.client = None
-        self.sendFileReq = Queue()
-        self.getFileRes = Queue()
     
     def __lt__(self, obj):
         ##is self less than obj?
@@ -51,9 +45,11 @@ class ServerInteraction:
         self.sendMessageRes_Channel = Queue()
         self.updateUsernameRes_Channel = Queue()
         self.getPortRes_Channel = Queue()
+        self.getFileListRes_Channel = Queue()
+        self.insertFilesRes_Channel = Queue()
+        self.deleteFileRes_Channel = Queue()
+        self.searchFileRes_Channel = Queue()
         #<-----------******************---------->
-        
-        self.hostedFiles = []
             
         self._lock = Lock()
         ##Server config

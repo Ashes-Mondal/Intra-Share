@@ -32,25 +32,8 @@ class Options_MainWindow():
 
     def setupUi(self, MainWindow):
         # temp data from the server
-        print(self.clientIns.activeClients) #dict
+        # print(self.clientIns.activeClients) #dict
         userDict = self.clientIns.activeClients
-        userlist = [
-            {
-                "username": "MondalAshes",
-            },
-            {
-                "username": "Mr.Agnihotri",
-            },
-            {
-                "username": "StuartRyder",
-            },
-            {
-                "username": "SahuRajendra",
-            },
-            {
-                "username": "JeevrajASS",
-            }
-        ]
 
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1183, 855)
