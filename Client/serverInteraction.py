@@ -9,11 +9,13 @@ class client_struct:
         self.clientID = clientID
         self.username = username
         self.online = online
-        self.unread_messages =[]
+        # self.unread_messages =[]
+        
+        self.messages = Queue()
         
         ##File sharing attributes
-        self.filesTaking = []
-        self.filesGiving = []
+        self.filesTaking = {}
+        self.filesGiving = {}
     
     def __lt__(self, obj):
         ##is self less than obj?
@@ -32,7 +34,7 @@ class client_struct:
     def debug(self):
         print(f'clientID: {self.clientID}')
         print(f'username: {self.username}')
-        print(f'unread_messages: {self.unread_messages}')
+        print(f'messages: {list(self.messages.queue)}')
         print(f'filesTaking: {self.filesTaking}')
         print(f'filesGiving: {self.filesGiving}\n')
 class ServerInteraction:
@@ -50,8 +52,11 @@ class ServerInteraction:
         self.deleteFileRes_Channel = Queue()
         self.searchFileRes_Channel = Queue()
         #<-----------******************---------->
-            
+
         self._lock = Lock()
+        
+        #Active Messaging clients
+        self.activeMessagingClient = {}
         ##Server config
         self.server_addr = None
         self.server_password = None
@@ -62,7 +67,6 @@ class ServerInteraction:
         self.port1 = None##messaging port
         self.clientCredentials = {"username":None,"password":None}
         ##Public attributes
-        self.activeMessagingClient = None
         self.activeClients = {}
     
     def _passwordVerification(self):
@@ -137,10 +141,4 @@ class ServerInteraction:
     def _processReceivedMessage(self,data):
         senderID = data['sender']
         message = data['message']
-        if self.activeMessagingClient!=None and self.activeMessagingClient.clientID == senderID:
-            ##client is talking to that client
-            username = self.activeMessagingClient.username
-            print(f'{bcolors["OKCYAN"]}<{username}>{bcolors["ENDC"]}{message}',end='\n')
-        else:
-            with self._lock:
-                self.activeClients[senderID].unread_messages.append(message)
+        self.activeClients[senderID].messages.put(message)

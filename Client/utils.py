@@ -44,15 +44,14 @@ class pickling_struct:
     def __init__(self,client):
         self.clientID = client.clientID
         self.username = client.username
-        self.unread_messages = client.unread_messages
+        self.messages = list(client.messages.queue)
         self.filesTaking = client.filesTaking
     
     def debug(self):
         print(f'clientID: {self.clientID}')
         print(f'username: {self.username}')
-        print(f'unread_messages: {self.unread_messages}')
+        print(f'messages: {self.messages}')
         print(f'filesTaking: {self.filesTaking}')
-        print(f'filesGiving: {self.filesGiving}\n')
 
 def saveAppLastState(username,server_addr,activeClients: dict):
     filename = os.path.join(f'bin/app_{username}.bin')
@@ -61,10 +60,10 @@ def saveAppLastState(username,server_addr,activeClients: dict):
     with open(filename,mode='wb') as f:
         pickle.dump(server_addr,f)
         for k,client in activeClients.items():
-            # client.debug()
-            if len(client.unread_messages) == 0 and len(client.filesTaking) == 0:
+            if len(client.messages.queue) == 0 and len(client.filesTaking) == 0:
                 continue
             obj = pickling_struct(client)
+            # obj.debug()
             pickle.dump(obj,f)
 
 def getAppLastState(username,server_addr):
@@ -82,6 +81,10 @@ def getAppLastState(username,server_addr):
                 try:
                     obj = pickle.load(f)
                     # obj.debug()
+                    q = Queue()
+                    for msg in obj.messages:
+                        q.put(msg)
+                    obj.messages = q
                     nList.append(obj)
                 except Exception as e:
                     break

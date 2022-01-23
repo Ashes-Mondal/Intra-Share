@@ -2,7 +2,7 @@ import json
 import os
 import socket
 import sys
-from threading import Thread, current_thread
+from threading import Thread, current_thread,Event
 
 import tqdm
 from colors import bcolors
@@ -82,7 +82,7 @@ class FileSharingFunctionalities:
                         self._closeFileClient(client)
                     res = {"type":"response","data":"OK","error":None}
                     conn.sendall(encodeJSON(res))
-                    t = Thread(target=self._sendClientFile,args=(client, data),name=f'_sendClientFile{client[0]}')
+                    t = Thread(target=self._sendClientFile,args=(client, data,pause),name=f'_sendClientFile{client[0]}')
                     t.start()
                 else:
                     res = {"type":"response","data":None,"error":"Invalid request,closing the connection"}
@@ -92,7 +92,7 @@ class FileSharingFunctionalities:
                 # print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
                 self._closeFileClient(client)
 
-    def _sendClientFile(self,client: tuple,data: dict):
+    def _sendClientFile(self,client: tuple,data: dict,pause):
         conn,addr = client
         
         start = data["start"]
