@@ -3,7 +3,7 @@ import os
 import socket
 import sys
 from getpass import getpass
-from threading import Event, Thread, current_thread
+from threading import Event, Thread, current_thread , Event
 
 from tabulate import tabulate
 
@@ -12,7 +12,7 @@ from Client.serverInteraction import ServerInteraction, client_struct
 from Client.utils import encodeJSON, getAppLastState, saveAppLastState,getDownloadDiectory,getFiles
 from colors import bcolors
 
-SERVER_IP = '192.168.29.39'
+SERVER_IP = '192.168.0.174'
 SERVER_PORT = 9999
 SERVER_PASSWORD = 'qwerty'
 USER_CREDENTIALS = {
@@ -135,7 +135,7 @@ class Client(ServerInteraction,FileSharingFunctionalities):
         ##check if client is online
         if self.activeClients[clientID].online == False:
             raise Exception("Client Offline!")
-        
+        pause1 = Event()
         ##Select download directory
         download_directory = getDownloadDiectory()
         
@@ -166,8 +166,8 @@ class Client(ServerInteraction,FileSharingFunctionalities):
             raise Exception(response["error"])
         
         
-        t1 = Thread(target=self._receiveFile,args=(conn,start,end,filename,filesize,download_directory),daemon=True,name=f'_receiveFile_{filename}')
-        t2 = Thread(target=self._clientInteraction,args=(conn,),daemon=True,name=f'_clientInteraction_{filename}')
+        t1 = Thread(target=self._receiveFile,args=(conn,start,end,filename,filesize,download_directory,pause1),daemon=True,name=f'_receiveFile_{filename}')
+        t2 = Thread(target=self._clientInteraction,args=(conn,pause1),daemon=True,name=f'_clientInteraction_{filename}')
         t1.start()
         t2.start()
         
