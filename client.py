@@ -21,7 +21,7 @@ from Client.utils import (
 )
 from colors import bcolors
 
-SERVER_IP = '192.168.0.174'
+SERVER_IP = '192.168.xx.xxx'
 SERVER_PORT = 9999
 SERVER_PASSWORD = ""
 USER_CREDENTIALS = {
@@ -401,10 +401,9 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         if response["error"] != None:
             raise Exception(response["error"])
 
-        t1 = Thread(target=self._receiveFile, args=(conn, start, end, filename,
-                    filesize, download_directory), daemon=True, name=f'_receiveFile_{filename}')
-        t2 = Thread(target=self._clientInteraction, args=(conn,),
-                    daemon=True, name=f'_clientInteraction_{filename}')
+        pause1 = Event()
+        t1 = Thread(target=self._receiveFile, args=(conn,pause1, start, end, filename,filesize, download_directory), daemon=True, name=f'_receiveFile_{filename}')
+        t2 = Thread(target=self._clientInteraction, args=(conn,pause1),daemon=True, name=f'_clientInteraction_{filename}')
         t1.start()
         t2.start()
 
@@ -511,8 +510,7 @@ class InteractiveShell(Client):
         try:
             USER_CREDENTIALS["username"] = input("USERNAME:")
             USER_CREDENTIALS["password"] = getpass(prompt="PASSWORD:")
-            self.startClient(server_addr=(SERVER_IP, SERVER_PORT),
-                             server_password=SERVER_PASSWORD, clientCredentials=USER_CREDENTIALS)
+            self.startClient(server_addr=(SERVER_IP, SERVER_PORT),server_password=SERVER_PASSWORD, clientCredentials=USER_CREDENTIALS)
         except Exception as e:
             sys.exit()
 
@@ -696,9 +694,9 @@ class InteractiveShell(Client):
                     download_directory = getDownloadDiectory()
 
                     # start download in  new thread
-                    download_file_thread = Thread(target=self.downloadFile, args=(ID, fileID, filename, int(
-                        filesize), download_directory), daemon=True, name=f'download_file_thread{ID}')
+                    download_file_thread = Thread(target=self.downloadFile, args=(ID, fileID, filename, int(filesize), download_directory), daemon=True, name=f'download_file_thread{ID}')
                     download_file_thread.start()
+                    download_file_thread.join()
                     # self.downloadFile()
                 except Exception as error:
                     print(f'"{command}" is an invalid command.', str(error))

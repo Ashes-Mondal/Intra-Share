@@ -88,10 +88,10 @@ class FileSharingFunctionalities:
                 # print(client_request)
                 
                 if client_request['type'] == 'pause_request':
-                    print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Pause request...')
+                    # print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Pause request...')
                     pause2.set()
                 elif client_request['type'] == 'play_request':
-                    print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Play request...')
+                    # print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Play request...')
                     pause2.set()
                 elif client_request['type'] == 'download_request':
                     data = client_request['data']
