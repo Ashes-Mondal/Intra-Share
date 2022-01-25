@@ -7,7 +7,8 @@ model = (
     status BOOLEAN DEFAULT TRUE,
     ip VARCHAR(255) ,
     port1 INT,
-    port2 INT
+    port2 INT,
+    pubkey TEXT
 """
 )
 

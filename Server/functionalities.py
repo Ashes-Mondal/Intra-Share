@@ -20,22 +20,6 @@ class Functionalities(Database_Methods):
         self._server_password = None
         self.allClients = {}
 
-    # def _sendUpdatedClientList(self,timeout: int):
-    #     print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}{current_thread().getName()} is online...')
-    #     while True:
-    #         time.sleep(timeout)
-    #         ipList = []
-    #         for clientID, clientOBJ in self.allClients.items():
-    #             ipList.append((clientOBJ.username,clientID))
-
-    #         for clientID, clientOBJ in self.allClients.items():
-    #             conn,addr = clientOBJ.client
-    #             response = {"type":"server_update","data":ipList}
-    #             try:
-    #                 conn.sendall(encodeJSON(response))
-    #             except:
-    #                 pass
-
     def _checkForServerPassword(self, client: tuple):
         conn, addr = client
         # receiving password from the client
@@ -89,10 +73,10 @@ class Functionalities(Database_Methods):
         time.sleep(0.1)
         return clientID, username
 
-    def _getPortsFromClient(self, clientID: int, client: tuple):
+    def _getMetadataFromClient(self, clientID: int, client: tuple):
         conn, addr = client
 
-        # receiving ports from the client
+        # receiving metadata from the client
         client_response = str(conn.recv(4096), 'utf-8')
         if len(client_response) == 0:
             # client has disconnected from server
@@ -101,8 +85,8 @@ class Functionalities(Database_Methods):
         client_response = json.loads(client_response)
 
         if client_response["type"] == 'client_ports':
-            ports = client_response["data"]
-            self._updateClientPorts(clientID, ports)
+            metadata = client_response["data"]
+            self._updateClientMetadata(clientID, metadata)
             fileList = self._getClientFiles(clientID)
             members = self._getAllMembers()
         else:
@@ -112,10 +96,10 @@ class Functionalities(Database_Methods):
             "fileList": fileList, "clientID": clientID, "members": members}, "error": None}
         conn.sendall(encodeJSON(server_response))
 
-        # print("PASSED _getPortsFromClient")
+        # print("PASSED _getMetadataFromClient")
 
         time.sleep(0.1)
-        return ports
+        return metadata
 
     def _heatbeatCheck(self, clientID: int):
         conn, addr = self.allClients[clientID].client
@@ -150,13 +134,15 @@ class Functionalities(Database_Methods):
                         self.allClients[data["receiver"]
                                         ].sendQueue.put(client_request)
                     else:
-                        server_response = {"type": "client_request_response_SM", "data": None,"error": "Failed to send message,client went offline!"}
+                        server_response = {"type": "client_request_response_SM", "data": None,
+                                           "error": "Failed to send message,client went offline!"}
                         self.allClients[data["sender"]
                                         ].sendQueue.put(server_response)
 
                 # update_client_username
                 elif client_request["type"] == "update_client_username":
-                    server_response = {"type": "client_request_response_UU","data": "Successfully updated your username.", "error": None}
+                    server_response = {"type": "client_request_response_UU",
+                                       "data": "Successfully updated your username.", "error": None}
                     # request["data"] = username:str
                     newUsername = client_request["data"]
                     try:
@@ -177,7 +163,8 @@ class Functionalities(Database_Methods):
                         server_response = {"type": "client_request_response_GP", "data": (
                             IP, port2), "error": None}
                     else:
-                        server_response = {"type": "client_request_response_GP","data": None, "error": "Failed client went offline!"}
+                        server_response = {"type": "client_request_response_GP",
+                                           "data": None, "error": "Failed client went offline!"}
                     self.allClients[clientID].sendQueue.put(server_response)
 
                 # get client's files sharing list
@@ -227,6 +214,18 @@ class Functionalities(Database_Methods):
                     except Exception as error:
                         server_response = {
                             "type": "client_request_response_SF", "data": None, "error": str(error)}
+                    self.allClients[clientID].sendQueue.put(server_response)
+                
+                # get public key
+                elif client_request["type"] == "get_pubkey":
+                    ID = client_request["data"]
+                    try:
+                        res = self._getClientPubkey(ID)
+                        server_response = {
+                            "type": "client_request_response_CPK", "data": res, "error": None}
+                    except Exception as error:
+                        server_response = {
+                            "type": "client_request_response_CPK", "data": None, "error": str(error)}
                     self.allClients[clientID].sendQueue.put(server_response)
             except socket.error as error:
                 print(f'{bcolors["FAIL"]}[SERVER]Failed to keep listening to the client!{bcolors["ENDC"]}{bcolors["UNDERLINE"]}{self.allClients[clientID].clientIP}{bcolors["ENDC"]}')
