@@ -3,8 +3,7 @@ import os
 import socket
 import sys
 from getpass import getpass
-from queue import Queue
-from threading import Event, Thread, current_thread
+from threading import Event, Thread, current_thread 
 
 from tabulate import tabulate
 
@@ -149,17 +148,54 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         server_request = json.loads(server_request)
         if server_request['type'] == 'password_verification':
             self._passwordVerification()
+        
+        ##Successfully connected to server
+        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Connected to the server.')
+        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}clientIP:{self.clientIP} port1:{self.port1} port2:{self.port2}')
+    
+    ## Public methods
+    def downloadFile(self,clientID:int,fileID:int,filename: str,filesize:int):
+        ##check if client is online
+        if self.activeClients[clientID].online == False:
+            raise Exception("Client Offline!")
+        ##Select download directory
+        download_directory = getDownloadDiectory()
+        
+        ##manipulate chunks
+        start = 0
+        end = (filesize//4096) + 1 if (filesize%4096) else 0
+        
+        ##get address from server ,create socket and then establish connection
+        clientAddr = self.getAddrOfClient(clientID)
+        conn = socket.socket()
+        conn.settimeout(5)
+        conn.connect(clientAddr)
+        conn.settimeout(None)
+        
+        ##send download_request
+        request = {"type":"download_request","data":{"fileID":fileID,"start":start,"end":end}}
+        conn.sendall(encodeJSON(request))
 
-        # Successfully connected to server
-        print(
-            f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Connected to the server.')
-        print(
-            f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}clientIP:{self.clientIP} port1:{self.port1} port2:{self.port2}')
-
-
-#*******************************  Public methods  *************************#
-    ##!---------- > Client methods < ------------!##
-
+        ##waiting for the response
+        response = str(conn.recv(4096),'utf-8')
+        if len(response) == 0:
+            print(f'{bcolors["FAIL"]}[CLIENT]Failed to download file := "{filename}"{bcolors["ENDC"]}')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} Client went offline')
+            conn.close()
+            raise Exception(f'Failed to download file, client went offline')
+        response = json.loads(response)
+        if response["error"]!=None:
+            raise Exception(response["error"])
+        
+        pause1 = Event()
+        t1 = Thread(target=self._receiveFile,args=(conn,pause1,start,end,filename,filesize,download_directory ),daemon=True,name=f'_receiveFile_{filename}')
+        t2 = Thread(target=self._clientInteraction,args=(conn, pause1),daemon=True,name=f'_clientInteraction_{filename}')
+        t1.start()
+        t2.start()
+        
+        t1.join()
+        conn.close()
+    
     def closeClient(self):
         print(
             f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Closing connection with server...')
@@ -365,10 +401,9 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         if response["error"] != None:
             raise Exception(response["error"])
 
-        t1 = Thread(target=self._receiveFile, args=(conn, start, end, filename,
-                    filesize, download_directory), daemon=True, name=f'_receiveFile_{filename}')
-        t2 = Thread(target=self._clientInteraction, args=(conn,),
-                    daemon=True, name=f'_clientInteraction_{filename}')
+        pause1 = Event()
+        t1 = Thread(target=self._receiveFile, args=(conn,pause1, start, end, filename,filesize, download_directory), daemon=True, name=f'_receiveFile_{filename}')
+        t2 = Thread(target=self._clientInteraction, args=(conn,pause1),daemon=True, name=f'_clientInteraction_{filename}')
         t1.start()
         t2.start()
 
@@ -475,8 +510,7 @@ class InteractiveShell(Client):
         try:
             USER_CREDENTIALS["username"] = input("USERNAME:")
             USER_CREDENTIALS["password"] = getpass(prompt="PASSWORD:")
-            self.startClient(server_addr=(SERVER_IP, SERVER_PORT),
-                             server_password=SERVER_PASSWORD, clientCredentials=USER_CREDENTIALS)
+            self.startClient(server_addr=(SERVER_IP, SERVER_PORT),server_password=SERVER_PASSWORD, clientCredentials=USER_CREDENTIALS)
         except Exception as e:
             sys.exit()
 
@@ -660,9 +694,9 @@ class InteractiveShell(Client):
                     download_directory = getDownloadDiectory()
 
                     # start download in  new thread
-                    download_file_thread = Thread(target=self.downloadFile, args=(ID, fileID, filename, int(
-                        filesize), download_directory), daemon=True, name=f'download_file_thread{ID}')
+                    download_file_thread = Thread(target=self.downloadFile, args=(ID, fileID, filename, int(filesize), download_directory), daemon=True, name=f'download_file_thread{ID}')
                     download_file_thread.start()
+                    download_file_thread.join()
                     # self.downloadFile()
                 except Exception as error:
                     print(f'"{command}" is an invalid command.', str(error))
