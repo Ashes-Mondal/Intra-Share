@@ -1,3 +1,4 @@
+from ast import Try
 import json
 import os
 import socket
@@ -7,7 +8,7 @@ from threading import Thread, current_thread,Event
 import tqdm
 from colors import bcolors
 
-from .utils import encodeJSON,getFile
+from .utils import encodeJSON,getFile,recvall
 
 
 class FileSharingFunctionalities:
@@ -29,16 +30,18 @@ class FileSharingFunctionalities:
         filepath = os.path.join(download_directory, filename)
         print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Downloading path:= {bcolors["UNDERLINE"]}{filepath}{bcolors["ENDC"]}')
         progress = tqdm.tqdm(range(filesize), f'{bcolors["OKGREEN"]}Downloading{bcolors["ENDC"]}', unit="B", unit_scale=True, unit_divisor=1024)
+        completed_bytes = 0
         with open(filepath, 'wb') as output:
             output.seek(4096 * start)
             while start<end:
                 try:
-                    data = conn.recv(4096)
+                    data = recvall(conn,min(4096,filesize - completed_bytes ))
                     if not data:
                         print(f'{bcolors["FAIL"]}[CLIENT]_receiveFile error! {bcolors["ENDC"]}')
                         print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} Client went offline!')
                         break
                     output.write(data)
+                    completed_bytes+=len(data)
                     progress.update(len(data))
                     start+=1
                     if(pause1.is_set()):
@@ -60,17 +63,18 @@ class FileSharingFunctionalities:
             
         
     def _clientInteraction(self,conn,pause1):
-        res = {"type":"pause_request","data":None,"error":"Invalid request,closing the connection"}
         while True:
-            command = input('>>>')
-            if(command=='p'):
-                pause1.set()
-                res = {"type":"pause_request"}
-            elif(command=='r'):
-                pause1.set()
-                res = {"type":"play_request"}
-
-            conn.sendall(encodeJSON(res))
+            try:
+                command = input('>>>')
+                if(command=='p'):
+                    pause1.set()
+                    res = {"type":"pause_request"}
+                elif(command=='r'):
+                    pause1.set()
+                    res = {"type":"play_request"}
+                conn.sendall(encodeJSON(res))
+            except:
+                sys.exit()
 
     def _listenClientForRequests(self,client:tuple):
         conn,addr = client

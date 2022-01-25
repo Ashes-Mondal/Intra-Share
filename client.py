@@ -21,7 +21,7 @@ from Client.utils import (
 )
 from colors import bcolors
 
-SERVER_IP = '192.168.xx.xxx'
+SERVER_IP = '192.168.29.39'
 SERVER_PORT = 9999
 SERVER_PASSWORD = ""
 USER_CREDENTIALS = {
@@ -64,8 +64,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             print(
                 f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Opened file sharing socket')
             # Thread1:Accepts connections
-            t1 = Thread(target=self._acceptConnections,
-                        daemon=True, name=f'_acceptConnections')
+            t1 = Thread(target=self._acceptConnections,daemon=True, name=f'_acceptConnections')
             t1.start()
         except socket.error as error:
             print(
@@ -409,8 +408,8 @@ class Client(ServerInteraction, FileSharingFunctionalities):
 
         t1.join()
         conn.close()
-        print(
-            f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Download completed 😊\n>>', end='')
+        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Download completed 😊\n>>', end='')
+        sys.exit()
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 
     ##!---------- > Shared files methods < ------------!##
