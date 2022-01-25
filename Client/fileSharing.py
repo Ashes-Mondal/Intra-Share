@@ -2,7 +2,7 @@ import json
 import os
 import socket
 import sys
-from threading import Thread, current_thread , Event
+from threading import Thread, current_thread,Event
 
 import tqdm
 from colors import bcolors
@@ -25,45 +25,39 @@ class FileSharingFunctionalities:
         self.hostedFiles = {}
         self.FileTakingclients = []
     
-    def _receiveFile(self,conn,start:int,end:int,filename:str,filesize:int,download_directory:str , pause1):
+    def _receiveFile(self,conn,pause1,start:int,end:int,filename:str,filesize:int,download_directory:str):
         filepath = os.path.join(download_directory, filename)
         print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Downloading path:= {bcolors["UNDERLINE"]}{filepath}{bcolors["ENDC"]}')
         progress = tqdm.tqdm(range(filesize), f'{bcolors["OKGREEN"]}Downloading{bcolors["ENDC"]}', unit="B", unit_scale=True, unit_divisor=1024)
         with open(filepath, 'wb') as output:
             output.seek(4096 * start)
-            while True:
-                while start<end:
-                    try:
-                        data = conn.recv(4096)
-                        if not data:
-                            print(f'{bcolors["FAIL"]}[CLIENT]_receiveFile error! {bcolors["ENDC"]}')
-                            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} Client went offline!')
-                            break
-                        output.write(data)
-                        progress.update(len(data))
-                        start+=1
-                        if(pause1.is_set()):
-                            pause1.clear()
-                            pause1.wait()
-                            pause1.clear()
-
-                    except Exception as error:
-                        print(f'{bcolors["FAIL"]}[CLIENT]Failed to listen to {bcolors["ENDC"]}')
-                        print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            while start<end:
+                try:
+                    data = conn.recv(4096)
+                    if not data:
+                        print(f'{bcolors["FAIL"]}[CLIENT]_receiveFile error! {bcolors["ENDC"]}')
+                        print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} Client went offline!')
                         break
-                if(start==end):
-                    ##closing the connection
-                    conn.close()
-                    sys.exit()
+                    output.write(data)
+                    progress.update(len(data))
+                    start+=1
+                    if(pause1.is_set()):
+                        pause1.clear()
+                        pause1.wait()
+                        pause1.clear()
 
-                pause1.wait()
-                print(pause1.is_set() , " After wait in receive file")
+                except Exception as error:
+                    print(f'{bcolors["FAIL"]}[CLIENT]Failed to listen to {bcolors["ENDC"]}')
+                    print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+                    break
+            ##closing the connection
+            conn.close()
+            sys.exit()
             
             #debug
             # print(f'\n{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Chunks received:{start}/{end}')
             # print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Closed connection with the peer.')
             
-            sys.exit()
         
     def _clientInteraction(self,conn,pause1):
         res = {"type":"pause_request","data":None,"error":"Invalid request,closing the connection"}
@@ -107,7 +101,7 @@ class FileSharingFunctionalities:
                         self._closeFileClient(client)
                     res = {"type":"response","data":"OK","error":None}
                     conn.sendall(encodeJSON(res))
-                    t = Thread(target=self._sendClientFile,args=(client, data , pause2),name=f'_sendClientFile{client[0]}')
+                    t = Thread(target=self._sendClientFile,args=(pause2,client,data),name=f'_sendClientFile{client[0]}')
                     t.start()
                 else:
                     res = {"type":"response","data":None,"error":"Invalid request,closing the connection"}
@@ -117,7 +111,7 @@ class FileSharingFunctionalities:
                 # print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
                 self._closeFileClient(client)
 
-    def _sendClientFile(self,client: tuple,data: dict , pause2):
+    def _sendClientFile(self,pause2,client: tuple,data: dict):
         conn,addr = client
         
         start = data["start"]
