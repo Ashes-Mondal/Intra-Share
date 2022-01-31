@@ -3,7 +3,7 @@ import os
 import socket
 import sys
 from getpass import getpass
-from threading import Event, Thread, current_thread 
+from threading import Event, Thread, current_thread, Lock
 
 from tabulate import tabulate
 
@@ -21,7 +21,7 @@ from Client.utils import (
 )
 from colors import bcolors
 
-SERVER_IP = '192.168.29.39'
+SERVER_IP = '192.168.xxx.xxx'
 SERVER_PORT = 9999
 SERVER_PASSWORD = ""
 USER_CREDENTIALS = {
@@ -35,8 +35,8 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         self.closeEvent = Event()
         ServerInteraction.__init__(self)
         FileSharingFunctionalities.__init__(self)
-
     # Objective1:Open file sharing socket and accept incomming connection
+
     def _acceptConnections(self):
         # Caches all new established connections
         print(
@@ -64,7 +64,8 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             print(
                 f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Opened file sharing socket')
             # Thread1:Accepts connections
-            t1 = Thread(target=self._acceptConnections,daemon=True, name=f'_acceptConnections')
+            t1 = Thread(target=self._acceptConnections,
+                        daemon=True, name=f'_acceptConnections')
             t1.start()
         except socket.error as error:
             print(
@@ -147,54 +148,13 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         server_request = json.loads(server_request)
         if server_request['type'] == 'password_verification':
             self._passwordVerification()
-        
-        ##Successfully connected to server
-        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Connected to the server.')
-        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}clientIP:{self.clientIP} port1:{self.port1} port2:{self.port2}')
-    
-    ## Public methods
-    def downloadFile(self,clientID:int,fileID:int,filename: str,filesize:int):
-        ##check if client is online
-        if self.activeClients[clientID].online == False:
-            raise Exception("Client Offline!")
-        ##Select download directory
-        download_directory = getDownloadDiectory()
-        
-        ##manipulate chunks
-        start = 0
-        end = (filesize//4096) + 1 if (filesize%4096) else 0
-        
-        ##get address from server ,create socket and then establish connection
-        clientAddr = self.getAddrOfClient(clientID)
-        conn = socket.socket()
-        conn.settimeout(5)
-        conn.connect(clientAddr)
-        conn.settimeout(None)
-        
-        ##send download_request
-        request = {"type":"download_request","data":{"fileID":fileID,"start":start,"end":end}}
-        conn.sendall(encodeJSON(request))
 
-        ##waiting for the response
-        response = str(conn.recv(4096),'utf-8')
-        if len(response) == 0:
-            print(f'{bcolors["FAIL"]}[CLIENT]Failed to download file := "{filename}"{bcolors["ENDC"]}')
-            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} Client went offline')
-            conn.close()
-            raise Exception(f'Failed to download file, client went offline')
-        response = json.loads(response)
-        if response["error"]!=None:
-            raise Exception(response["error"])
-        
-        pause1 = Event()
-        t1 = Thread(target=self._receiveFile,args=(conn,pause1,start,end,filename,filesize,download_directory ),daemon=True,name=f'_receiveFile_{filename}')
-        t2 = Thread(target=self._clientInteraction,args=(conn, pause1),daemon=True,name=f'_clientInteraction_{filename}')
-        t1.start()
-        t2.start()
-        
-        t1.join()
-        conn.close()
-    
+        # Successfully connected to server
+        print(
+            f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Connected to the server.')
+        print(
+            f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}clientIP:{self.clientIP} port1:{self.port1} port2:{self.port2}')
+
     def closeClient(self):
         print(
             f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Closing connection with server...')
@@ -231,7 +191,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
                     obj = client_struct(
                         client.clientID, client.username, online=False)
                     obj.messages = client.messages or []
-                    obj.filesTaking = client.filesTaking or []
+                    obj.fileTaking = client.fileTaking or []
                     self.activeClients[client.clientID] = obj
 
             # Successfully authenticated
@@ -271,7 +231,15 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             self.closeClient()
             raise error
 
+    def savefilebeforclose(self):
+        for clientID, obj in self.activeClients.items():
+            for fileID,file in obj.fileTaking.items():
+                # client.fileTaking[fileID] = [start, completed_bytes , True , pause1]
+                if(file[2] == False):
+                    file[3].set()
+
     def closeApplication(self):
+        self.savefilebeforclose()
         saveAppLastState(
             self.clientCredentials['username'], self.server_addr, self.activeClients)
         self.closeClient()
@@ -312,12 +280,15 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             # Waiting for response from server
             server_response = self.sendMessageRes_Channel.get(timeout=5)
             if server_response["data"] == None:
-                print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} {bcolors["FAIL"]}{server_response["error"]}{bcolors["ENDC"]}', end='\n')
+                print(
+                    f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} {bcolors["FAIL"]}{server_response["error"]}{bcolors["ENDC"]}', end='\n')
                 raise Exception(server_response["error"])
-            print(f'<{bcolors["HEADER"]}{self.clientCredentials["username"]}>{bcolors["ENDC"]} {message}', end='\n')
+            print(
+                f'<{bcolors["HEADER"]}{self.clientCredentials["username"]}>{bcolors["ENDC"]} {message}', end='\n')
             self.sendMessageRes_Channel.task_done()
         except Exception as error:
-            print(f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error sending message!')
+            print(
+                f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error sending message!')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             raise error
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
@@ -374,6 +345,13 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         # manipulate chunks
         start = 0
         end = (filesize//4096) + 1 if (filesize % 4096) else 0
+        completed_bytes = 0
+        
+        client = self.activeClients[clientID]
+        if fileID in client.fileTaking.keys():
+            start = client.fileTaking[fileID][0]
+            completed_bytes = client.fileTaking[fileID][1]
+        
 
         # get address from server ,create socket and then establish connection
         clientAddr = self.getAddrOfClient(clientID)
@@ -399,17 +377,21 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         response = json.loads(response)
         if response["error"] != None:
             raise Exception(response["error"])
-
         pause1 = Event()
-        t1 = Thread(target=self._receiveFile, args=(conn,pause1, start, end, filename,filesize, download_directory), daemon=True, name=f'_receiveFile_{filename}')
-        t2 = Thread(target=self._clientInteraction, args=(conn,pause1),daemon=True, name=f'_clientInteraction_{filename}')
+        file = (fileID, start, end, filesize, filename, download_directory,completed_bytes)
+        t1 = Thread(target=self._receiveFile, args=(client,conn, pause1,file), daemon=True, name=f'_receiveFile_{filename}')
+        t2 = Thread(target=self._clientInteraction, args=(
+            conn, pause1), daemon=True, name=f'_clientInteraction_{filename}')
         t1.start()
         t2.start()
 
         t1.join()
+        if client.fileTaking[fileID][1] == filesize:
+            with self.filelock:
+                del(client.fileTaking[fileID])
         conn.close()
         print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Download completed 😊\n>>', end='')
-        sys.exit()
+        sys.exit(0)
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 
     ##!---------- > Shared files methods < ------------!##
@@ -509,7 +491,8 @@ class InteractiveShell(Client):
         try:
             USER_CREDENTIALS["username"] = input("USERNAME:")
             USER_CREDENTIALS["password"] = getpass(prompt="PASSWORD:")
-            self.startClient(server_addr=(SERVER_IP, SERVER_PORT),server_password=SERVER_PASSWORD, clientCredentials=USER_CREDENTIALS)
+            self.startClient(server_addr=(SERVER_IP, SERVER_PORT),
+                             server_password=SERVER_PASSWORD, clientCredentials=USER_CREDENTIALS)
         except Exception as e:
             sys.exit()
 
@@ -616,14 +599,17 @@ class InteractiveShell(Client):
         while True:
             message = input(f'')
             if message == 'q':
-                print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]} Closing messaging with {bcolors["UNDERLINE"]}{self.activeClients[clientID].username}{bcolors["ENDC"]}')
+                print(
+                    f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]} Closing messaging with {bcolors["UNDERLINE"]}{self.activeClients[clientID].username}{bcolors["ENDC"]}')
                 break
             else:
                 try:
                     self.sendMessage(clientID, message)
                 except Exception as error:
-                    print(f'{bcolors["FAIL"]}[SERVER]Failed to send message to {bcolors["ENDC"]}{bcolors["UNDERLINE"]}{self.activeClients[clientID].username}{bcolors["ENDC"]}')
-                    print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+                    print(
+                        f'{bcolors["FAIL"]}[SERVER]Failed to send message to {bcolors["ENDC"]}{bcolors["UNDERLINE"]}{self.activeClients[clientID].username}{bcolors["ENDC"]}')
+                    print(
+                        f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
 
     def __startShell(self):
         print('Starting interactive shell...')
@@ -651,7 +637,8 @@ class InteractiveShell(Client):
                             f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}{error}')
                         continue
                 else:
-                    print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}{bcolors["FAIL"]}{clientID} not a digit!{bcolors["ENDC"]}')
+                    print(
+                        f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}{bcolors["FAIL"]}{clientID} not a digit!{bcolors["ENDC"]}')
             elif command == 'q':
                 self.closeApplication()
             elif "update username to" in command:
@@ -693,9 +680,10 @@ class InteractiveShell(Client):
                     download_directory = getDownloadDiectory()
 
                     # start download in  new thread
-                    download_file_thread = Thread(target=self.downloadFile, args=(ID, fileID, filename, int(filesize), download_directory), daemon=True, name=f'download_file_thread{ID}')
+                    download_file_thread = Thread(target=self.downloadFile, args=(ID, fileID, filename, int(
+                        filesize), download_directory), daemon=True, name=f'download_file_thread{ID}')
                     download_file_thread.start()
-                    download_file_thread.join()
+                    # download_file_thread.join()
                     # self.downloadFile()
                 except Exception as error:
                     print(f'"{command}" is an invalid command.', str(error))
