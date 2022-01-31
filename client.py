@@ -3,7 +3,7 @@ import os
 import socket
 import sys
 from getpass import getpass
-from threading import Event, Thread, current_thread 
+from threading import Event, Thread, current_thread ,Lock
 
 from tabulate import tabulate
 
@@ -35,7 +35,6 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         self.closeEvent = Event()
         ServerInteraction.__init__(self)
         FileSharingFunctionalities.__init__(self)
-
     # Objective1:Open file sharing socket and accept incomming connection
     def _acceptConnections(self):
         # Caches all new established connections
@@ -64,8 +63,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             print(
                 f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Opened file sharing socket')
             # Thread1:Accepts connections
-            t1 = Thread(target=self._acceptConnections,
-                        daemon=True, name=f'_acceptConnections')
+            t1 = Thread(target=self._acceptConnections,daemon=True, name=f'_acceptConnections')
             t1.start()
         except socket.error as error:
             print(
@@ -188,12 +186,16 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             raise Exception(response["error"])
         
         pause1 = Event()
-        t1 = Thread(target=self._receiveFile,args=(conn,pause1,start,end,filename,filesize,download_directory ),daemon=True,name=f'_receiveFile_{filename}')
+        client = self.activeClients[clientID]
+        t1 = Thread(target=self._receiveFile,args=(client,conn,pause1,start,end,filename,fileID,filesize,download_directory),daemon=True,name=f'_receiveFile_{filename}')
         t2 = Thread(target=self._clientInteraction,args=(conn, pause1),daemon=True,name=f'_clientInteraction_{filename}')
         t1.start()
         t2.start()
         
         t1.join()
+        if client.filesTaking[fileID][1] == filesize:
+            with self.filelock :
+                del(client.filesTaking[fileID])
         conn.close()
     
     def closeClient(self):
@@ -272,7 +274,14 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             self.closeClient()
             raise error
 
+    def savefilebeforclose(self):
+        for clientID,obj in self.activeClients.items():
+            for file in obj.fileTaking:
+                if(file[2]==False):  #client.filesTaking[fileID] = [start, completed_bytes , True , pause1]
+                    file[3].set()
+
     def closeApplication(self):
+        self.savefilebeforclose()
         saveAppLastState(
             self.clientCredentials['username'], self.server_addr, self.activeClients)
         self.closeClient()
@@ -401,17 +410,16 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         if response["error"] != None:
             raise Exception(response["error"])
 
-        t1 = Thread(target=self._receiveFile, args=(conn, start, end, filename,
-                    filesize, download_directory), daemon=True, name=f'_receiveFile_{filename}')
-        t2 = Thread(target=self._clientInteraction, args=(conn,),
-                    daemon=True, name=f'_clientInteraction_{filename}')
+        pause1 = Event()
+        t1 = Thread(target=self._receiveFile, args=(conn,pause1, start, end, filename,filesize, download_directory), daemon=True, name=f'_receiveFile_{filename}')
+        t2 = Thread(target=self._clientInteraction, args=(conn,pause1),daemon=True, name=f'_clientInteraction_{filename}')
         t1.start()
         t2.start()
 
         t1.join()
         conn.close()
-        print(
-            f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Download completed 😊\n>>', end='')
+        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Download completed 😊\n>>', end='')
+        sys.exit()
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 
     ##!---------- > Shared files methods < ------------!##
@@ -511,8 +519,7 @@ class InteractiveShell(Client):
         try:
             USER_CREDENTIALS["username"] = input("USERNAME:")
             USER_CREDENTIALS["password"] = getpass(prompt="PASSWORD:")
-            self.startClient(server_addr=(SERVER_IP, SERVER_PORT),
-                             server_password=SERVER_PASSWORD, clientCredentials=USER_CREDENTIALS)
+            self.startClient(server_addr=(SERVER_IP, SERVER_PORT),server_password=SERVER_PASSWORD, clientCredentials=USER_CREDENTIALS)
         except Exception as e:
             sys.exit()
 
@@ -696,9 +703,9 @@ class InteractiveShell(Client):
                     download_directory = getDownloadDiectory()
 
                     # start download in  new thread
-                    download_file_thread = Thread(target=self.downloadFile, args=(ID, fileID, filename, int(
-                        filesize), download_directory), daemon=True, name=f'download_file_thread{ID}')
+                    download_file_thread = Thread(target=self.downloadFile, args=(ID, fileID, filename, int(filesize), download_directory), daemon=True, name=f'download_file_thread{ID}')
                     download_file_thread.start()
+                    #download_file_thread.join()
                     # self.downloadFile()
                 except Exception as error:
                     print(f'"{command}" is an invalid command.', str(error))

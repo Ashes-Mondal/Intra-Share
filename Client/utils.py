@@ -16,6 +16,16 @@ import base64
 def encodeJSON(input: dict):
     return str(json.dumps(input)).encode()
 
+def recvall(conn, n):
+    # Helper function to recv n bytes or return None if EOF is hit
+    data = bytearray()
+    while len(data) < n:
+        packet = conn.recv(n - len(data))
+        if not packet:
+            return None
+        data.extend(packet)
+    return data
+
 def getFiles():
     root = tk.Tk()
     root.withdraw()

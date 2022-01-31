@@ -20,7 +20,6 @@ class client_struct:
 
         # File sharing attributes
         self.filesTaking = {}
-        self.filesGiving = {}
 
     def __lt__(self, obj):
         # is self less than obj?

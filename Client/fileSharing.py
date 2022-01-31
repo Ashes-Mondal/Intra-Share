@@ -1,13 +1,14 @@
+from ast import Try
 import json
 import os
 import socket
 import sys
-from threading import Thread, current_thread,Event
+from threading import Thread, current_thread,Event,Lock
 
 import tqdm
 from colors import bcolors
 
-from .utils import encodeJSON,getFile
+from .utils import encodeJSON,getFile,recvall
 
 
 class FileSharingFunctionalities:
@@ -20,31 +21,37 @@ class FileSharingFunctionalities:
         # filepath = os.path.abspath(f'{os.getcwd()}/downloads/test.txt')
         # filename = filepath.split("/")[-1]
         # filesize = os.path.getsize(filepath)
-        
+        self.filelock=Lock()
         self.displayFiles = {}
         self.hostedFiles = {}
         self.FileTakingclients = []
     
-    def _receiveFile(self,conn,pause1,start:int,end:int,filename:str,filesize:int,download_directory:str):
+    def _receiveFile(self,client,conn,pause1,start:int,end:int,filename:str,fileID:int,filesize:int,download_directory:str):
         filepath = os.path.join(download_directory, filename)
         print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Downloading path:= {bcolors["UNDERLINE"]}{filepath}{bcolors["ENDC"]}')
         progress = tqdm.tqdm(range(filesize), f'{bcolors["OKGREEN"]}Downloading{bcolors["ENDC"]}', unit="B", unit_scale=True, unit_divisor=1024)
+        completed_bytes = 0
+        client.fileTaking[fileID]=[0,0,False,pause1]
         with open(filepath, 'wb') as output:
             output.seek(4096 * start)
             while start<end:
                 try:
-                    data = conn.recv(4096)
+                    data = recvall(conn,min(4096,filesize - completed_bytes ))
                     if not data:
                         print(f'{bcolors["FAIL"]}[CLIENT]_receiveFile error! {bcolors["ENDC"]}')
                         print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} Client went offline!')
                         break
                     output.write(data)
+                    completed_bytes+=len(data)
                     progress.update(len(data))
                     start+=1
                     if(pause1.is_set()):
                         pause1.clear()
+                        with self.filelock:
+                            client.filesTaking[fileID] = [start, completed_bytes , True , pause1]
                         pause1.wait()
                         pause1.clear()
+                        client.filesTaking[fileID][2]=False
 
                 except Exception as error:
                     print(f'{bcolors["FAIL"]}[CLIENT]Failed to listen to {bcolors["ENDC"]}')
@@ -60,17 +67,18 @@ class FileSharingFunctionalities:
             
         
     def _clientInteraction(self,conn,pause1):
-        res = {"type":"pause_request","data":None,"error":"Invalid request,closing the connection"}
         while True:
-            command = input('>>>')
-            if(command=='p'):
-                pause1.set()
-                res = {"type":"pause_request"}
-            elif(command=='r'):
-                pause1.set()
-                res = {"type":"play_request"}
-
-            conn.sendall(encodeJSON(res))
+            try:
+                command = input('>>>')
+                if(command=='p'):
+                    pause1.set()
+                    res = {"type":"pause_request"}
+                elif(command=='r'):
+                    pause1.set()
+                    res = {"type":"play_request"}
+                conn.sendall(encodeJSON(res))
+            except:
+                sys.exit()
 
     def _listenClientForRequests(self,client:tuple):
         conn,addr = client
@@ -88,10 +96,10 @@ class FileSharingFunctionalities:
                 # print(client_request)
                 
                 if client_request['type'] == 'pause_request':
-                    print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Pause request...')
+                    # print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Pause request...')
                     pause2.set()
                 elif client_request['type'] == 'play_request':
-                    print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Play request...')
+                    # print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Play request...')
                     pause2.set()
                 elif client_request['type'] == 'download_request':
                     data = client_request['data']
