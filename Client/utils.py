@@ -59,13 +59,16 @@ class pickling_struct:
         self.clientID = client.clientID
         self.username = client.username
         self.messages = list(client.messages.queue)
-        self.filesTaking = client.filesTaking
+        self.fileTaking = {}
+        # client.fileTaking =key:fileID,value:[start, completed_bytes, True, pause1]
+        for fileID,file in client.fileTaking.items():
+            self.fileTaking[fileID] = [file[0],file[1],False,None]
     
     def debug(self):
         print(f'clientID: {self.clientID}')
         print(f'username: {self.username}')
         print(f'messages: {self.messages}')
-        print(f'filesTaking: {self.filesTaking}')
+        print(f'fileTaking: {self.fileTaking}')
 
 def saveAppLastState(username,server_addr,activeClients: dict):
     filename = os.path.join(f'bin/app_{username}.bin')
@@ -74,7 +77,7 @@ def saveAppLastState(username,server_addr,activeClients: dict):
     with open(filename,mode='wb') as f:
         pickle.dump(server_addr,f)
         for k,client in activeClients.items():
-            if len(client.messages.queue) == 0 and len(client.filesTaking) == 0:
+            if len(client.messages.queue) == 0 and len(client.fileTaking) == 0:
                 continue
             obj = pickling_struct(client)
             # obj.debug()
@@ -95,6 +98,7 @@ def getAppLastState(username,server_addr):
                 try:
                     obj = pickle.load(f)
                     # obj.debug()
+                    ##tranfers unread messages to queue
                     q = Queue()
                     for msg in obj.messages:
                         q.put(msg)

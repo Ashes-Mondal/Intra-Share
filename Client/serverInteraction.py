@@ -19,7 +19,7 @@ class client_struct:
         self.pubkey = None
 
         # File sharing attributes
-        self.filesTaking = {}
+        self.fileTaking = {}
 
     def __lt__(self, obj):
         # is self less than obj?
@@ -39,7 +39,7 @@ class client_struct:
         print(f'clientID: {self.clientID}')
         print(f'username: {self.username}')
         print(f'messages: {list(self.messages.queue)}')
-        print(f'filesTaking: {self.filesTaking}')
+        print(f'fileTaking: {self.fileTaking}')
         print(f'filesGiving: {self.filesGiving}\n')
 
 
