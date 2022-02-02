@@ -1,5 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from .options import Options_MainWindow
+from .userWindow import UserWindow
+from .UIComponents.MainHeading import MainHeading
 
 def validateIP(serverip):
     dotIndex = []
@@ -82,21 +84,9 @@ class Ui_MainWindow():
         font.setPointSize(14)
         self.label_password.setFont(font)
         self.label_password.setObjectName("label_password")
-        self.label_heading = QtWidgets.QLabel(self.centralwidget)
-        self.label_heading.setGeometry(QtCore.QRect(260, 30, 641, 61))
-        self.label_heading.setStyleSheet("border: 2px solid red;\n"
-        "border-radius: 10px;\n"
-        "padding-left: 10;\n"
-        "padding-right: 10;\n"
-        "color: rgb(85, 255, 255);\n"
-        "background-color: rgb(85, 0, 127);")
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(17)
-        font.setBold(True)
-        font.setWeight(75)
-        self.label_heading.setFont(font)
-        self.label_heading.setObjectName("label_heading")
+
+        self.label_heading = MainHeading(self.centralwidget)
+
         self.label_uid = QtWidgets.QLabel(self.centralwidget)
         self.label_uid.setGeometry(QtCore.QRect(330, 160, 91, 41))
         font = QtGui.QFont()
@@ -173,7 +163,6 @@ class Ui_MainWindow():
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         self.MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
-        self.label_heading.setText(_translate("MainWindow", "WELCOME TO THE LOCAL DC++ PROJECT"))
         self.submit_button.setText(_translate("MainWindow", "SUBMIT"))
         self.submit_button.clicked.connect(self.validateCredentials)
         
@@ -194,6 +183,10 @@ class Ui_MainWindow():
         self.label_error.setText(_translate("MainWindow", ""))
 
     def validateCredentials(self):
+        # userid = "Agni"
+        # password = "password"
+        # serverip = "192.168.43.244"
+        # port = 9999
         userid = self.uid_input.text()
         password = self.password_input.text()
         serverip = self.ip_input.text()
@@ -230,11 +223,9 @@ class Ui_MainWindow():
                     clientCredentials=credentials
                 )
                 # move to main application file
-                self.window = QtWidgets.QMainWindow()
-                self.ui = Options_MainWindow(self.clientIns)
-                self.ui.setupUi(self.window)
                 self.MainWindow.hide()
-                self.window.show()
+                self.ui = UserWindow(self.clientIns)
+                self.ui.setupUi()
         except Exception as error:
             self.submit_button.setEnabled(True)
             if str(error) == "timed out":
