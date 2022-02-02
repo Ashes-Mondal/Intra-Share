@@ -86,16 +86,16 @@ class Database_Methods:
             err_msg = f'INTERNAL SERVER ERROR'
             raise Exception(err_msg)
 
-    def _updateClientPorts(self, clientID: int, ports: dict):
+    def _updateClientMetadata(self, clientID: int, metadata: dict):
         try:
             operation = """
             UPDATE clients
-            SET status=%s, port1=%s, port2=%s
+            SET status=%s, port1=%s, port2=%s, pubkey=%s
             WHERE clientID=%s
             """
             curr = self.dbConn.cursor()
             curr.execute(
-                operation, (True, ports["port1"], ports["port2"], clientID))
+                operation, (True, metadata["port1"], metadata["port2"],metadata["pubkey"], clientID))
             self.dbConn.commit()
         except mysql.connector.Error as error:
             print(
@@ -110,10 +110,24 @@ class Database_Methods:
             curr = self.dbConn.cursor()
             curr.execute(operation)
             res = curr.fetchone()
-            return res
+            return res[0]
         except mysql.connector.Error as error:
             print(
                 f'{bcolors["FAIL"]}[DATABASE] Failed to get client details {bcolors["ENDC"]}')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            err_msg = f'INTERNAL SERVER ERROR'
+            raise Exception(err_msg)
+    
+    def _getClientPubkey(self, clientID: int):
+        try:
+            operation = f'SELECT pubkey FROM clients WHERE clientID =%s'
+            curr = self.dbConn.cursor()
+            curr.execute(operation,(clientID,))
+            res = curr.fetchone()
+            return res[0]
+        except mysql.connector.Error as error:
+            print(
+                f'{bcolors["FAIL"]}[DATABASE] Failed to get client public key {bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             err_msg = f'INTERNAL SERVER ERROR'
             raise Exception(err_msg)

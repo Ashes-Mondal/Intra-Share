@@ -3,4 +3,5 @@
 *.txt
 bin
 downloads
+keys
 __pycache__

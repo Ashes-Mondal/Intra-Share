@@ -3,6 +3,7 @@ cffi==1.15.0
 mysql-connector-python==8.0.27
 protobuf==3.19.3
 pycparser==2.21
+pycryptodome==3.13.0
 PyQt5==5.15.6
 PyQt5-Qt5==5.15.2
 PyQt5-sip==12.9.0
