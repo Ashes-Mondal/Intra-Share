@@ -1,14 +1,53 @@
-from threading import Thread
+import time
+# from threading import Thread
 from PyQt5 import QtCore, QtWidgets, QtGui
 from .UIComponents.MainHeading import MainHeading
 from .UIComponents.MessageWindow import MessageWindow
+from .UIComponents.GroupChat import GroupChat
 
-class ButtonComponent:
-    def __init__(self, centralwidget, index, clientOBJ, clientID, clientIns) -> None:
-        centralwidget.setObjectName("centralwidget")
+class BtnThread(QtCore.QThread):
+    my_signal = QtCore.pyqtSignal()
+    def run(self):
+        while True:
+            print("BtnThread:\n")
+            self.my_signal.emit()
+            time.sleep(5)
+
+
+# class BtnThread(QtCore.QThread):
+#     def __init__(self, centralwidget, userDict, clientIns, userid) -> None:
+#         super(BtnThread, self).__init__()
+#         print("\nEntered BtnThread class")
+#         self.centralwidget = centralwidget
+#         self.userDict = userDict
+#         self.clientIns = clientIns
+#         self.userid = userid
+
+#     def run(self):
+#         while True:
+#             self.buttonObjs = []
+#             index = 0
+#             # print("checking:\n")
+#             try:
+#                 time.sleep(0.02)
+#                 for clientID, clientOBJ in self.userDict.items():
+#                     if clientOBJ.online:
+#                         print(index)
+#                         btnObj = ButtonComponent(self.centralwidget, index, clientOBJ, clientID, self.clientIns, self.userid)
+#                         self.buttonObjs.append(btnObj)
+#                         index += 1
+#             except Exception as err:
+#                 print("ERROR: ", err)
+#             time.sleep(5)
+
+
+class ButtonComponent():
+    def __init__(self, vbox, index, clientOBJ, clientID, clientIns, userid) -> None:
+        # vbox.setObjectName("centralwidget")
         self.clientID = clientID
         self.clientIns = clientIns
-        self.userButton = QtWidgets.QPushButton(centralwidget)
+        self.userid = userid
+        self.userButton = QtWidgets.QPushButton()
         self.userButton.setGeometry(QtCore.QRect(30, 160 + (index * 90), 341, 61))
         self.userButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.userButton.setStyleSheet("text-align: left;\n"
@@ -26,77 +65,29 @@ class ButtonComponent:
         self.userButton.setText(self._translate("MainWindow", self.label))
         self.userButton.clicked.connect(self.setCurrentUser)
 
+        vbox.addWidget(self.userButton)
+        print(clientID, clientOBJ.username)
+
     def setCurrentUser(self):
-        self.UserWindow = QtWidgets.QMainWindow()
-        self.UserWindow.setObjectName("ChatWindow2")
-        self.UserWindow.resize(801, 830)
-        self.msg_centralwidget = QtWidgets.QWidget(self.UserWindow)
-        self.msg_centralwidget.setObjectName("msg_centralwidget")
+        self.user = MessageWindow(self.label, self.clientIns, self.clientID, self.userid)
+        # self.user.msgInput.returnPressed.connect(self.sendMessageFunc)
+        # self.user.sendMsgBtn.clicked.connect(self.sendMessageFunc)
+        # try:
+        #     self.__startSendingMessages(self.clientID)
+        # except Exception as err:
+        #     print(err)
+        self.user.show()
 
-        self.msg_index = 0
-        self.user = MessageWindow(self.msg_centralwidget, self.label)
-        self.user.msgInput.returnPressed.connect(self.sendMessageFunc)
-        self.user.sendMsgBtn.clicked.connect(self.sendMessageFunc)
 
-        self.UserWindow.setCentralWidget(self.msg_centralwidget)
-        try:
-            self.__startSendingMessages(self.clientID)
-        except Exception as err:
-            print(err)
-        self.UserWindow.show()
+class SetUI():
+    def __init__(self, MainSelf) -> None:
+        self.mainwindow = MainSelf
 
-    def sendMessageFunc(self):
-        message = self.user.msgInput.text()
-        print(str(self.msg_index) + " " + message + "\n")
-        if len(message) != 0:
-            self.user.msgInput.clear()
-            self.user.textBrowser.append(message)
-            try:
-                print(self.clientID, message)
-                self.clientIns.sendMessage(self.clientID, message)
-                print("SENT\n")
-            except Exception as err:
-                print(err)
-            self.msg_index += 1
-
-    def __receiveMessages(self, clientID: int):
-        while True:
-            message = self.clientIns.activeClients[clientID].messages.get()
-            username = self.clientIns.activeClients[clientID].username
-            self.user.textBrowser.append(username + ": " + message)
-
-    def __startSendingMessages(self, clientID: int):
-        receiveMessages_thread = Thread(target=self.__receiveMessages, args=(
-            clientID,), daemon=True, name=f'receiveMessages_thread{clientID}')
-        receiveMessages_thread.start()
-
-        # display unread messages
-        while self.clientIns.activeClients[clientID].messages.empty() == False:
-            message = self.clientIns.activeClients[clientID].messages.get()
-            username = self.clientIns.activeClients[clientID].username
-            self.user.textBrowser.append(username + ": " + message)
-
-class UserWindow(object):
-    def __init__(self, clientIns) -> None:
-        self.userDict = clientIns.activeClients
-        self.clientIns = clientIns
-
-    def closeEvent(self, event):
-        reply = QtWidgets.QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the window?',
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
-
-        if reply == QtWidgets.QMessageBox.Yes:
-            event.accept()
-            print('Window closed')
-        else:
-            event.ignore()
-
-    def setupUi(self):
-        self.MainWindow = QtWidgets.QMainWindow()
-        self.MainWindow.setObjectName("MainWindow2")
-        self.MainWindow.setFixedWidth(1183)
-        self.MainWindow.setFixedHeight(855)
-        self.centralwidget = QtWidgets.QWidget(self.MainWindow)
+    def setupUi(self, widget, userid):
+        self.mainwindow.setObjectName("MainWindow")
+        self.mainwindow.setFixedWidth(1183)
+        self.mainwindow.setFixedHeight(855)
+        self.centralwidget = widget
         self.centralwidget.setObjectName("centralwidget")
         _translate = QtCore.QCoreApplication.translate
 
@@ -137,25 +128,138 @@ class UserWindow(object):
         self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_3.setObjectName("line_3")
 
-        # self.usersWidget = QtWidgets.QWidget(self.MainWindow)
+class UserWindow(QtWidgets.QMainWindow):
+    def __init__(self, clientIns, userid):
+        super(UserWindow, self).__init__()
+        self.userDict = clientIns.activeClients
+        self.clientIns = clientIns
+        self.userid = userid
+        self.cur_index = 0
         self.buttonObjs = []
-        # self.userComponents = [self.currentUser, self.msgInput, self.sendMsg, self.sentMsg_1, self.line_2, self.line_3, self.msgTab, self.fileTab, self.recvMsg_1]
+
+    def setupUi(self):
+        self.centralwidget = QtWidgets.QWidget(self)
+        try:
+            setUI = SetUI(self)
+            setUI.setupUi(self.centralwidget, self.userid)
+
+            self.vbox = QtWidgets.QVBoxLayout(self.centralwidget)
+            # v_widget = QtWidgets.QWidget()
+            # v_widget.setLayout(self.vbox)
+            # v_widget.setFixedWidth(855)
+            # self.vbox.setGeometry(QtCore.QRect(30, 160, 341, 855))
+            self.StartButtonEvent()
+
+        except Exception as arr:
+            print(arr)
+
+        # Group chats ui
+        self.grpChatUi = GroupChat(self.centralwidget)
+        self.setCentralWidget(self.centralwidget)
+        self.setWindowTitle(self.userid)
+        self.show()
+
+    def StartButtonEvent(self):
+        self.btnThrd = BtnThread()
+        self.btnThrd.finished.connect(self.thread_finished)
+        self.btnThrd.my_signal.connect(self.createBtns)
+        self.btnThrd.start()
+
+    # Create buttons in thread
+    def createBtns(self):
+        print(self.cur_index, ". createBtns:\n")
+        self.cur_index += 1
+        for btnObj in self.buttonObjs:
+            self.vbox.removeWidget(btnObj.userButton)
+        self.buttonObjs.clear()
         index = 0
-        for clientID, clientOBJ in self.userDict.items():
-            btnObj = ButtonComponent(self.centralwidget, index, clientOBJ, clientID, self.clientIns)
-            self.buttonObjs.append(btnObj)
-            index += 1
+        try:
+            time.sleep(0.02)
+            for clientID, clientOBJ in self.userDict.items():
+                if clientOBJ.online:
+                    btnObj = ButtonComponent(self.vbox, index, clientOBJ, clientID, self.clientIns, self.userid)
+                    self.buttonObjs.append(btnObj)
+                    index += 1
+            print(self.buttonObjs)
+        except Exception as err:
+            print("ERROR: ", err)
 
-        self.MainWindow.setCentralWidget(self.centralwidget)
-        self.MainWindow.show()
+    def thread_finished(self):
+        print("finished\n")
 
-        # while True:
-        #     # self.usersWidget = QtWidgets.QWidget(self.MainWindow)
-        #     self.buttonObjs = []
-        #     # self.userComponents = [self.currentUser, self.msgInput, self.sendMsg, self.sentMsg_1, self.line_2, self.line_3, self.msgTab, self.fileTab, self.recvMsg_1]
-        #     index = 0
+
+    # def buttonThread(self):
+    #     # app = QtCore.QCoreApplication([])
+    #     btn_thread = BtnThread(self.centralwidget, self.userDict, self.clientIns, self.userid)
+    #     print("\nEntered buttonThread3")
+    #     # btn_thread.finished.connect(app.exit)
+    #     btn_thread.start()
+
+
+
+
+        # for clID, clOBJ in self.clientIns.activeClients.items():
+        #     print("\n" + clOBJ.username + " " + str(clOBJ.online) + "\n")
+        # self.buttonObjs = []
+        # index = 0
+        # try:
+        #     time.sleep(0.02)
         #     for clientID, clientOBJ in self.userDict.items():
-        #         btnObj = ButtonComponent(self.centralwidget, index, clientOBJ)
-        #         self.buttonObjs.append(btnObj)
-        #         index += 1
-        #     time.sleep(5)Ui_MainWindow
+        #         if clientOBJ.online:
+        #             print(index)
+        #             btnObj = ButtonComponent(self.centralwidget, index, clientOBJ, clientID, self.clientIns, self.userid)
+        #             self.buttonObjs.append(btnObj)
+        #             index += 1
+        # except Exception as err:
+        #     print(err)
+
+
+'''
+self.setObjectName("MainWindow")
+            self.setFixedWidth(1183)
+            self.setFixedHeight(855)
+            self.centralwidget = QtWidgets.QWidget(self)
+            self.centralwidget.setObjectName("centralwidget")
+            _translate = QtCore.QCoreApplication.translate
+
+            self.label_heading = MainHeading(self.centralwidget)
+
+            self.allUsers = QtWidgets.QPushButton(self.centralwidget)
+            self.allUsers.setGeometry(QtCore.QRect(0, 100, 401, 51))
+            font = QtGui.QFont()
+            font.setPointSize(14)
+            font.setBold(True)
+            font.setWeight(75)
+            self.allUsers.setFont(font)
+            self.allUsers.setCursor(QtGui.QCursor(QtCore.Qt.ArrowCursor))
+            self.allUsers.setStyleSheet("text-align: left;\n"
+            "padding-left: 35;\n"
+            "padding-right: 10px;\n"
+            "border: 2px solid black;\n"
+            "border-left: none;\n"
+            "color: rgb(85, 0, 127);")
+            
+            self.allUsers.setObjectName("allUsers")
+            self.line = QtWidgets.QFrame(self.centralwidget)
+            self.line.setGeometry(QtCore.QRect(390, 90, 20, 731))
+            self.line.setFrameShape(QtWidgets.QFrame.VLine)
+            self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
+            self.line.setObjectName("line")
+            self.allUsers.setText(_translate("MainWindow", "Users Available Right Now"))
+
+            self.line_2 = QtWidgets.QFrame(self.centralwidget)
+            self.line_2.setGeometry(QtCore.QRect(400, 100, 781, 3))
+            self.line_2.setFrameShape(QtWidgets.QFrame.HLine)
+            self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
+            self.line_2.setObjectName("line_2")
+
+            self.line_3 = QtWidgets.QFrame(self.centralwidget)
+            self.line_3.setGeometry(QtCore.QRect(400, 150, 781, 3))
+            self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
+            self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
+            self.line_3.setObjectName("line_3")
+
+            self.setCentralWidget(self.centralwidget)
+            self.setWindowTitle(self.userid)
+            self.show()
+'''

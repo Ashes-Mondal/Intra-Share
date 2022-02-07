@@ -38,9 +38,9 @@ class client_struct:
     def debug(self):
         print(f'clientID: {self.clientID}')
         print(f'username: {self.username}')
+        print(f'is Online: {self.online}')
         print(f'messages: {list(self.messages.queue)}')
         print(f'fileTaking: {self.fileTaking}')
-        print(f'filesGiving: {self.filesGiving}\n')
 
 
 class ServerInteraction:

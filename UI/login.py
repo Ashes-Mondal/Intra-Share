@@ -19,16 +19,27 @@ def validateIP(serverip):
     return True
 
 
-class Ui_MainWindow():
+class Ui_MainWindow(QtWidgets.QMainWindow):
     def __init__(self, clientIns) -> None:
+        super(Ui_MainWindow, self).__init__()
         self.clientIns = clientIns
-        self.MainWindow = QtWidgets.QMainWindow()
+        # self.MainWindow = QtWidgets.QMainWindow()
+    
+    def closeEvent(self, event):
+        reply = QtWidgets.QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the window?',
+                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+
+        if reply == QtWidgets.QMessageBox.Yes:
+            event.accept()
+            print('Window closed')
+        else:
+            event.ignore()
     
     def startUI(self):
-        self.MainWindow.setObjectName("MainWindow")
-        self.MainWindow.setFixedWidth(1183)
-        self.MainWindow.setFixedHeight(855)
-        self.centralwidget = QtWidgets.QWidget(self.MainWindow)
+        self.setObjectName("MainWindow")
+        self.setFixedWidth(1183)
+        self.setFixedHeight(855)
+        self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
         self.submit_button = QtWidgets.QPushButton(self.centralwidget)
         self.submit_button.setGeometry(QtCore.QRect(430, 470, 371, 32))
@@ -148,21 +159,21 @@ class Ui_MainWindow():
         font.setPointSize(14)
         self.label_password_2.setFont(font)
         self.label_password_2.setObjectName("label_password_2")
-        self.MainWindow.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(self.MainWindow)
+        self.setCentralWidget(self.centralwidget)
+        self.menubar = QtWidgets.QMenuBar(self)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 1183, 26))
         self.menubar.setObjectName("menubar")
-        self.MainWindow.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(self.MainWindow)
+        self.setMenuBar(self.menubar)
+        self.statusbar = QtWidgets.QStatusBar(self)
         self.statusbar.setObjectName("statusbar")
-        self.MainWindow.setStatusBar(self.statusbar)
+        self.setStatusBar(self.statusbar)
 
         self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self.MainWindow)
+        QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        self.MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.submit_button.setText(_translate("MainWindow", "SUBMIT"))
         self.submit_button.clicked.connect(self.validateCredentials)
         
@@ -223,8 +234,8 @@ class Ui_MainWindow():
                     clientCredentials=credentials
                 )
                 # move to main application file
-                self.MainWindow.hide()
-                self.ui = UserWindow(self.clientIns)
+                self.hide()
+                self.ui = UserWindow(self.clientIns, userid)
                 self.ui.setupUi()
         except Exception as error:
             self.submit_button.setEnabled(True)
