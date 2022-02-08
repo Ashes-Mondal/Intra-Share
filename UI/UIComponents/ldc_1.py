@@ -44,15 +44,42 @@ class Ui_MainWindow(object):
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setEnabled(True)
         self.label.setStyleSheet("text-align: left;\n"
-"padding-left: 10;\n"
-"padding-right: 10px;\n"
-"border: 2px solid black;\n"
-"color: rgb(85, 0, 127);\n"
-"background-color: rgb(255, 255, 127);\n"
-"font: 75 14pt \"MS Sans Serif\";")
+        "padding-left: 10;\n"
+        "padding-right: 10px;\n"
+        "border: 2px solid black;\n"
+        "color: rgb(85, 0, 127);\n"
+        "background-color: rgb(255, 255, 127);\n"
+        "font: 75 14pt \"MS Sans Serif\";")
         self.label.setObjectName("label")
         self.verticalLayout_10.addWidget(self.label)
         self.verticalLayout_5.addLayout(self.verticalLayout_10)
+
+        self.horizontalLayout_14 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_14.setObjectName("horizontalLayout_14")
+        self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEdit.setStyleSheet("text-align: left;\n"
+        "padding: 3;\n"
+        "padding-left: 10;\n"
+        "padding-right: 10;\n"
+        "border: 2px solid black;\n"
+        "border-radius: 10px;\n"
+        "color: rgb(85, 0, 127);\n"
+        "font: 75 11pt \"MS Sans Serif\";")
+        self.lineEdit.setObjectName("lineEdit")
+        self.horizontalLayout_14.addWidget(self.lineEdit)
+        self.pushButton_11 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_11.setStyleSheet("padding: 4;\n"
+        "padding-left: 10;\n"
+        "padding-right: 10;\n"
+        "color: rgb(85, 0, 127);\n"
+        "background-color: rgb(85, 255, 255);\n"
+        "text-align: left;\n"
+        "border: 2px solid black;\n"
+        "border-radius: 10px;\n"
+        "font: 75 11pt \"MS Sans Serif\";")
+        self.pushButton_11.setObjectName("pushButton_11")
+        self.horizontalLayout_14.addWidget(self.pushButton_11)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_14)
 
         #############################################################################################################
         self.userScroll = QtWidgets.QScrollArea()
@@ -80,6 +107,7 @@ class Ui_MainWindow(object):
                 self.msgPushButton = QtWidgets.QPushButton(self.userWidget)
                 self.msgPushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
                 self.msgPushButton.setStyleSheet("font-size: 15px;\n"
+                "margin: 5px 10px;\n"
                 # "border: 2px solid black;\n"
                 "border-radius: 20px;\n"
                 "padding: 4;\n"
@@ -102,6 +130,7 @@ class Ui_MainWindow(object):
                 self.filePushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
                 self.filePushButton.setStyleSheet("font-size: 15px;\n"
                 # "border: 2px solid black;\n"
+                "margin: 5px 10px;\n"
                 "border-radius: 20px;\n"
                 "padding: 4;\n"
                 # "color: rgb(85, 0, 127);\n"
@@ -146,7 +175,7 @@ class Ui_MainWindow(object):
 
         self.line_3 = QtWidgets.QFrame(self.centralwidget)
         self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_3.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line_3.setObjectName("line_3")
         self.verticalLayout_4.addWidget(self.line_3)
 
@@ -306,7 +335,7 @@ class Ui_MainWindow(object):
         
         self.line_2 = QtWidgets.QFrame(self.centralwidget)
         self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
-        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_2.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line_2.setObjectName("line_2")
         self.horizontalLayout.addWidget(self.line_2)
         
@@ -318,33 +347,35 @@ class Ui_MainWindow(object):
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
         self.lineEdit_2 = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_2.setStyleSheet("text-align: left;\n"
-        "padding: 3;\n"
+        "padding: 7;\n"
         "padding-left: 10;\n"
         "padding-right: 10;\n"
         "border: 2px solid black;\n"
+        "border-radius: 10px;\n"
         "color: rgb(85, 0, 127);\n"
         "font: 75 11pt \"MS Sans Serif\";")
         self.lineEdit_2.setObjectName("lineEdit_2")
         self.horizontalLayout_11.addWidget(self.lineEdit_2)
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.pushButton_2.setStyleSheet("padding: 4;\n"
+        self.pushButton_2.setStyleSheet("padding: 8;\n"
         "padding-left: 10;\n"
         "padding-right: 10;\n"
         "color: rgb(85, 0, 127);\n"
-        "background-color: rgb(255, 255, 127);\n"
+        "background-color: rgb(85, 255, 255);\n"
         "text-align: left;\n"
         "border: 2px solid black;\n"
+        "border-radius: 10px;\n"
         "font: 75 11pt \"MS Sans Serif\";")
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout_11.addWidget(self.pushButton_2)
         self.verticalLayout_7.addLayout(self.horizontalLayout_11)
 
-        self.line_8 = QtWidgets.QFrame(self.centralwidget)
-        self.line_8.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_8.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_8.setObjectName("line_8")
-        self.verticalLayout_7.addWidget(self.line_8)
+        # self.line_8 = QtWidgets.QFrame(self.centralwidget)
+        # self.line_8.setFrameShape(QtWidgets.QFrame.HLine)
+        # self.line_8.setFrameShadow(QtWidgets.QFrame.Sunken)
+        # self.line_8.setObjectName("line_8")
+        # self.verticalLayout_7.addWidget(self.line_8)
 
         ###########################################################################################################
         self.fileSrchScroll = QtWidgets.QScrollArea()
@@ -407,7 +438,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_13.addLayout(self.horizontalLayout_5)
         self.line_9 = QtWidgets.QFrame(self.fileSearchWidget)
         self.line_9.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_9.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_9.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line_9.setObjectName("line_9")
         self.verticalLayout_13.addWidget(self.line_9)
 
@@ -523,7 +554,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addLayout(self.verticalLayout_7)
         self.line = QtWidgets.QFrame(self.centralwidget)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line.setObjectName("line")
         self.verticalLayout.addWidget(self.line)
 
@@ -533,20 +564,104 @@ class Ui_MainWindow(object):
         self.verticalLayout_16.setObjectName("verticalLayout_16")
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setStyleSheet("text-align: left;\n"
-"padding-left: 10;\n"
-"padding-right: 10px;\n"
-"border: 2px solid black;\n"
-"color: rgb(85, 0, 127);\n"
-"background-color: rgb(255, 255, 127);\n"
-"font: 75 14pt \"MS Sans Serif\";")
+        "padding-left: 10;\n"
+        "padding-right: 10px;\n"
+        "border: 2px solid black;\n"
+        "color: rgb(85, 0, 127);\n"
+        "background-color: rgb(255, 255, 127);\n"
+        "font: 75 14pt \"MS Sans Serif\";")
         self.label_2.setObjectName("label_2")
         self.verticalLayout_16.addWidget(self.label_2)
         self.verticalLayout_8.addLayout(self.verticalLayout_16)
+
+        self.dlFileSrchScroll = QtWidgets.QScrollArea()
+        self.dlFileSearchWidget = QtWidgets.QWidget()
+
         self.verticalLayout_15 = QtWidgets.QVBoxLayout()
         self.verticalLayout_15.setObjectName("verticalLayout_15")
+
+        downloadsList = [
+                {"fileName": "Study Material :)", "owner": "Ashes", "size": "50GB"},
+                {"fileName": "ISI Secrets", "owner": "Utkarsh", "size": "1TB"},
+                {"fileName": "Study Material :)", "owner": "Ashes", "size": "50GB"},
+                {"fileName": "ISI Secrets", "owner": "Utkarsh", "size": "1TB"},
+                {"fileName": "Study Material :)", "owner": "Ashes", "size": "50GB"},
+                {"fileName": "ISI Secrets", "owner": "Utkarsh", "size": "1TB"},
+                {"fileName": "Study Material :)", "owner": "Ashes", "size": "50GB"},
+                {"fileName": "ISI Secrets", "owner": "Utkarsh", "size": "1TB"}
+        ]
+
+        for i in range(0, len(downloadsList)):
+                self.dlFileVbox = QtWidgets.QVBoxLayout()
+                self.dlFileVbox.setObjectName("dlFileHbox_" + str(i))
+                _translate = QtCore.QCoreApplication.translate
+
+                self.dlFileInfoHbox = QtWidgets.QHBoxLayout()
+                self.dlFileInfoHbox.setContentsMargins(-1, -1, 0, -1)
+                self.dlFileInfoHbox.setObjectName("dlFileInfoHbox" + str(i))
+
+                self.dlFileInfo = QtWidgets.QLabel(self.dlFileSearchWidget)
+                self.dlFileInfo.setStyleSheet("text-align: left;\n"
+                "margin-top: 10px;\n"
+                "color: rgb(85, 0, 127);\n"
+                "font: 75 10pt \"Verdana\";")
+                self.dlFileInfo.setObjectName("dlFileInfo" + str(i))
+                info = downloadsList[i]["fileName"] + " | " + downloadsList[i]["owner"] + " | " + downloadsList[i]["size"]
+                self.dlFileInfo.setText(_translate("MainWindow", info))
+                self.dlFileInfoHbox.addWidget(self.dlFileInfo)
+                self.dlFileVbox.addLayout(self.dlFileInfoHbox)
+
+                self.dlFileProgressHbox = QtWidgets.QHBoxLayout()
+                self.dlFileProgressHbox.setObjectName("dlFileProgressHbox")
+
+                self.dlProgressBar = QtWidgets.QProgressBar(self.dlFileSearchWidget)
+                self.dlProgressBar.setProperty("value", 24)
+                self.dlProgressBar.setObjectName("dlProgressBar")
+                self.dlFileProgressHbox.addWidget(self.dlProgressBar)
+
+                self.pOr = QtWidgets.QPushButton(self.dlFileSearchWidget)
+                self.pOr.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                self.pOr.setStyleSheet("QPushButton {\n"
+                # "margin: 5px 10px;\n"
+                "font-size: 25px;\n"
+                # "border: 2px solid black;\n"
+                "border-radius: 10px;\n"
+                "padding: 4;\n"
+                # "color: rgb(85, 0, 127);\n"
+                # "background-color: rgb(85, 255, 255);"
+                # "background-color: rgb(147, 207, 250);"
+                "background-color: rgb(85, 255, 255);\n"
+                "}\n"
+                "QPushButton::hover {\n"
+                "    border: 2px solid #ffffff;\n"
+                "    background-color: #ffffff;\n"
+                "}\n"
+                )
+                self.pOr.setIcon(QtGui.QIcon('images/pause.png'))
+                self.dlFileProgressHbox.addWidget(self.pOr)
+
+                self.dlFileProgressHbox.setStretch(0, 25)
+                self.dlFileProgressHbox.setStretch(1, 1)
+                self.dlFileVbox.addLayout(self.dlFileProgressHbox)
+                self.verticalLayout_15.addLayout(self.dlFileVbox)
+
+                self.line_10 = QtWidgets.QFrame(self.dlFileSearchWidget)
+                self.line_10.setFrameShape(QtWidgets.QFrame.HLine)
+                self.line_10.setFrameShadow(QtWidgets.QFrame.Sunken)
+                self.line_10.setObjectName("line_10")
+                self.verticalLayout_15.addWidget(self.line_10)
+
         spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_15.addItem(spacerItem3)
-        self.verticalLayout_8.addLayout(self.verticalLayout_15)
+
+        self.dlFileSearchWidget.setLayout(self.verticalLayout_15)
+        #Scroll Area Properties
+        self.dlFileSrchScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.dlFileSrchScroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.dlFileSrchScroll.setWidgetResizable(True)
+        self.dlFileSrchScroll.setWidget(self.dlFileSearchWidget)
+        self.verticalLayout_8.addWidget(self.dlFileSrchScroll)
+
         self.verticalLayout_8.setStretch(0, 1)
         self.verticalLayout_8.setStretch(1, 7)
         self.verticalLayout.addLayout(self.verticalLayout_8)
@@ -567,8 +682,10 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "LOCAL-DC++"))
         self.label.setText(_translate("MainWindow", "CURRENT ONLINE USERS"))
+        self.lineEdit.setPlaceholderText(_translate("MainWindow", "Search a User"))
+        self.pushButton_11.setText(_translate("MainWindow", "Search"))
         self.label_19.setText(_translate("MainWindow", "YOUR FILES"))
         self.uploadBtn.setText(_translate("MainWindow", "INSERT A FILE"))
         self.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Search Files"))
