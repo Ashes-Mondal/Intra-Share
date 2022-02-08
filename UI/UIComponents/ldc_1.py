@@ -44,15 +44,42 @@ class Ui_MainWindow(object):
         self.label = QtWidgets.QLabel(self.centralwidget)
         self.label.setEnabled(True)
         self.label.setStyleSheet("text-align: left;\n"
-"padding-left: 10;\n"
-"padding-right: 10px;\n"
-"border: 2px solid black;\n"
-"color: rgb(85, 0, 127);\n"
-"background-color: rgb(255, 255, 127);\n"
-"font: 75 14pt \"MS Sans Serif\";")
+        "padding-left: 10;\n"
+        "padding-right: 10px;\n"
+        "border: 2px solid black;\n"
+        "color: rgb(85, 0, 127);\n"
+        "background-color: rgb(255, 255, 127);\n"
+        "font: 75 14pt \"MS Sans Serif\";")
         self.label.setObjectName("label")
         self.verticalLayout_10.addWidget(self.label)
         self.verticalLayout_5.addLayout(self.verticalLayout_10)
+
+        self.horizontalLayout_14 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_14.setObjectName("horizontalLayout_14")
+        self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
+        self.lineEdit.setStyleSheet("text-align: left;\n"
+        "padding: 3;\n"
+        "padding-left: 10;\n"
+        "padding-right: 10;\n"
+        "border: 2px solid black;\n"
+        "border-radius: 10px;\n"
+        "color: rgb(85, 0, 127);\n"
+        "font: 75 11pt \"MS Sans Serif\";")
+        self.lineEdit.setObjectName("lineEdit")
+        self.horizontalLayout_14.addWidget(self.lineEdit)
+        self.pushButton_11 = QtWidgets.QPushButton(self.centralwidget)
+        self.pushButton_11.setStyleSheet("padding: 4;\n"
+        "padding-left: 10;\n"
+        "padding-right: 10;\n"
+        "color: rgb(85, 0, 127);\n"
+        "background-color: rgb(85, 255, 255);\n"
+        "text-align: left;\n"
+        "border: 2px solid black;\n"
+        "border-radius: 10px;\n"
+        "font: 75 11pt \"MS Sans Serif\";")
+        self.pushButton_11.setObjectName("pushButton_11")
+        self.horizontalLayout_14.addWidget(self.pushButton_11)
+        self.verticalLayout_5.addLayout(self.horizontalLayout_14)
 
         #############################################################################################################
         self.userScroll = QtWidgets.QScrollArea()
@@ -146,7 +173,7 @@ class Ui_MainWindow(object):
 
         self.line_3 = QtWidgets.QFrame(self.centralwidget)
         self.line_3.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_3.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_3.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line_3.setObjectName("line_3")
         self.verticalLayout_4.addWidget(self.line_3)
 
@@ -306,7 +333,7 @@ class Ui_MainWindow(object):
         
         self.line_2 = QtWidgets.QFrame(self.centralwidget)
         self.line_2.setFrameShape(QtWidgets.QFrame.VLine)
-        self.line_2.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_2.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line_2.setObjectName("line_2")
         self.horizontalLayout.addWidget(self.line_2)
         
@@ -318,33 +345,35 @@ class Ui_MainWindow(object):
         self.horizontalLayout_11.setObjectName("horizontalLayout_11")
         self.lineEdit_2 = QtWidgets.QLineEdit(self.centralwidget)
         self.lineEdit_2.setStyleSheet("text-align: left;\n"
-        "padding: 3;\n"
+        "padding: 7;\n"
         "padding-left: 10;\n"
         "padding-right: 10;\n"
         "border: 2px solid black;\n"
+        "border-radius: 10px;\n"
         "color: rgb(85, 0, 127);\n"
         "font: 75 11pt \"MS Sans Serif\";")
         self.lineEdit_2.setObjectName("lineEdit_2")
         self.horizontalLayout_11.addWidget(self.lineEdit_2)
         self.pushButton_2 = QtWidgets.QPushButton(self.centralwidget)
         self.pushButton_2.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.pushButton_2.setStyleSheet("padding: 4;\n"
+        self.pushButton_2.setStyleSheet("padding: 8;\n"
         "padding-left: 10;\n"
         "padding-right: 10;\n"
         "color: rgb(85, 0, 127);\n"
-        "background-color: rgb(255, 255, 127);\n"
+        "background-color: rgb(85, 255, 255);\n"
         "text-align: left;\n"
         "border: 2px solid black;\n"
+        "border-radius: 10px;\n"
         "font: 75 11pt \"MS Sans Serif\";")
         self.pushButton_2.setObjectName("pushButton_2")
         self.horizontalLayout_11.addWidget(self.pushButton_2)
         self.verticalLayout_7.addLayout(self.horizontalLayout_11)
 
-        self.line_8 = QtWidgets.QFrame(self.centralwidget)
-        self.line_8.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_8.setFrameShadow(QtWidgets.QFrame.Sunken)
-        self.line_8.setObjectName("line_8")
-        self.verticalLayout_7.addWidget(self.line_8)
+        # self.line_8 = QtWidgets.QFrame(self.centralwidget)
+        # self.line_8.setFrameShape(QtWidgets.QFrame.HLine)
+        # self.line_8.setFrameShadow(QtWidgets.QFrame.Sunken)
+        # self.line_8.setObjectName("line_8")
+        # self.verticalLayout_7.addWidget(self.line_8)
 
         ###########################################################################################################
         self.fileSrchScroll = QtWidgets.QScrollArea()
@@ -407,7 +436,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_13.addLayout(self.horizontalLayout_5)
         self.line_9 = QtWidgets.QFrame(self.fileSearchWidget)
         self.line_9.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line_9.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line_9.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line_9.setObjectName("line_9")
         self.verticalLayout_13.addWidget(self.line_9)
 
@@ -523,7 +552,7 @@ class Ui_MainWindow(object):
         self.verticalLayout.addLayout(self.verticalLayout_7)
         self.line = QtWidgets.QFrame(self.centralwidget)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
-        self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
+        self.line.setFrameShadow(QtWidgets.QFrame.Plain)
         self.line.setObjectName("line")
         self.verticalLayout.addWidget(self.line)
 
@@ -533,12 +562,12 @@ class Ui_MainWindow(object):
         self.verticalLayout_16.setObjectName("verticalLayout_16")
         self.label_2 = QtWidgets.QLabel(self.centralwidget)
         self.label_2.setStyleSheet("text-align: left;\n"
-"padding-left: 10;\n"
-"padding-right: 10px;\n"
-"border: 2px solid black;\n"
-"color: rgb(85, 0, 127);\n"
-"background-color: rgb(255, 255, 127);\n"
-"font: 75 14pt \"MS Sans Serif\";")
+        "padding-left: 10;\n"
+        "padding-right: 10px;\n"
+        "border: 2px solid black;\n"
+        "color: rgb(85, 0, 127);\n"
+        "background-color: rgb(255, 255, 127);\n"
+        "font: 75 14pt \"MS Sans Serif\";")
         self.label_2.setObjectName("label_2")
         self.verticalLayout_16.addWidget(self.label_2)
         self.verticalLayout_8.addLayout(self.verticalLayout_16)
@@ -567,8 +596,10 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         _translate = QtCore.QCoreApplication.translate
-        MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        MainWindow.setWindowTitle(_translate("MainWindow", "LOCAL-DC++"))
         self.label.setText(_translate("MainWindow", "CURRENT ONLINE USERS"))
+        self.lineEdit.setPlaceholderText(_translate("MainWindow", "Search a User"))
+        self.pushButton_11.setText(_translate("MainWindow", "Search"))
         self.label_19.setText(_translate("MainWindow", "YOUR FILES"))
         self.uploadBtn.setText(_translate("MainWindow", "INSERT A FILE"))
         self.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Search Files"))
