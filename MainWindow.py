@@ -4,8 +4,10 @@ from UI.components.User import User
 from UI.components.UserFile import UserFile
 from UI.components.InsertFiles import InsertFiles
 from UI.components.FileSearch import FileSearch
+from UI.components.UserSearch import UserSearch
 from UI.components.File import File
-from UI.components.utils import usrData, userFilesData, ext_ico_path, fileSrchData
+from UI.components.DownloadFile import DownloadFile
+from UI.components.utils import usrData, userFilesData, ext_ico_path, fileSrchData,downloadsList
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -59,6 +61,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.verticalLayout_10.addWidget(self.heading1)
         self.verticalLayout_5.addLayout(self.verticalLayout_10)
 
+        self.usrSearchLayout = UserSearch(self.centralwidget)
+        self.verticalLayout_5.addLayout(self.usrSearchLayout)
         for user in usrData:
             usr = User(user, self.userWidget)
             # divider
@@ -241,16 +245,42 @@ class MainWindow(QtWidgets.QMainWindow):
         ##***************** "Download section **************##
         self.verticalLayout_8 = QtWidgets.QVBoxLayout()
         self.verticalLayout_8.setObjectName("verticalLayout_8")
+        
         self.verticalLayout_16 = QtWidgets.QVBoxLayout()
         self.verticalLayout_16.setObjectName("verticalLayout_16")
+        
+        self.verticalLayout_15 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_15.setObjectName("verticalLayout_15")
+
+        self.dlFileSrchScroll = QtWidgets.QScrollArea()
+        self.dlFileSearchWidget = QtWidgets.QWidget()
+        
         self.heading3 = Heading("Downloads", self.centralwidget)
         self.verticalLayout_16.addWidget(self.heading3)
         self.verticalLayout_8.addLayout(self.verticalLayout_16)
-        self.verticalLayout_15 = QtWidgets.QVBoxLayout()
-        self.verticalLayout_15.setObjectName("verticalLayout_15")
+
+        for details in downloadsList:
+            dlFileVbox = DownloadFile(details, self.dlFileSearchWidget)
+            self.verticalLayout_15.addLayout(dlFileVbox)
+            #divider
+            self.line_10 = QtWidgets.QFrame(self.dlFileSearchWidget)
+            self.line_10.setFrameShape(QtWidgets.QFrame.HLine)
+            self.line_10.setFrameShadow(QtWidgets.QFrame.Sunken)
+            self.line_10.setObjectName("line_10")
+            self.verticalLayout_15.addWidget(self.line_10)
+        
         spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_15.addItem(spacerItem3)
-        self.verticalLayout_8.addLayout(self.verticalLayout_15)
+        self.dlFileSearchWidget.setLayout(self.verticalLayout_15)
+        #Scroll Area Properties
+        self.dlFileSrchScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.dlFileSrchScroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.dlFileSrchScroll.setWidgetResizable(True)
+        self.dlFileSrchScroll.setWidget(self.dlFileSearchWidget)
+        self.verticalLayout_8.addWidget(self.dlFileSrchScroll)
+
+        # self.verticalLayout_8.addLayout(self.verticalLayout_15)
+        
         self.verticalLayout_8.setStretch(0, 1)
         self.verticalLayout_8.setStretch(1, 7)
         self.verticalLayout.addLayout(self.verticalLayout_8)
@@ -276,6 +306,8 @@ class MainWindow(QtWidgets.QMainWindow):
         _translate = QtCore.QCoreApplication.translate
         self.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.heading1.setText(_translate("MainWindow", "CURRENT ONLINE USERS"))
+        self.usrSearchLayout.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Search Files"))
+        self.usrSearchLayout.pushButton_2.setText(_translate("MainWindow", "Search"))
 
         self.heading2.setText(_translate("MainWindow", "YOUR FILES"))
         self.InsertFilesLayout.insertFilesBtn.setText(
