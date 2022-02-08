@@ -107,6 +107,7 @@ class Ui_MainWindow(object):
                 self.msgPushButton = QtWidgets.QPushButton(self.userWidget)
                 self.msgPushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
                 self.msgPushButton.setStyleSheet("font-size: 15px;\n"
+                "margin: 5px 10px;\n"
                 # "border: 2px solid black;\n"
                 "border-radius: 20px;\n"
                 "padding: 4;\n"
@@ -129,6 +130,7 @@ class Ui_MainWindow(object):
                 self.filePushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
                 self.filePushButton.setStyleSheet("font-size: 15px;\n"
                 # "border: 2px solid black;\n"
+                "margin: 5px 10px;\n"
                 "border-radius: 20px;\n"
                 "padding: 4;\n"
                 # "color: rgb(85, 0, 127);\n"
@@ -571,11 +573,95 @@ class Ui_MainWindow(object):
         self.label_2.setObjectName("label_2")
         self.verticalLayout_16.addWidget(self.label_2)
         self.verticalLayout_8.addLayout(self.verticalLayout_16)
+
+        self.dlFileSrchScroll = QtWidgets.QScrollArea()
+        self.dlFileSearchWidget = QtWidgets.QWidget()
+
         self.verticalLayout_15 = QtWidgets.QVBoxLayout()
         self.verticalLayout_15.setObjectName("verticalLayout_15")
+
+        downloadsList = [
+                {"fileName": "Study Material :)", "owner": "Ashes", "size": "50GB"},
+                {"fileName": "ISI Secrets", "owner": "Utkarsh", "size": "1TB"},
+                {"fileName": "Study Material :)", "owner": "Ashes", "size": "50GB"},
+                {"fileName": "ISI Secrets", "owner": "Utkarsh", "size": "1TB"},
+                {"fileName": "Study Material :)", "owner": "Ashes", "size": "50GB"},
+                {"fileName": "ISI Secrets", "owner": "Utkarsh", "size": "1TB"},
+                {"fileName": "Study Material :)", "owner": "Ashes", "size": "50GB"},
+                {"fileName": "ISI Secrets", "owner": "Utkarsh", "size": "1TB"}
+        ]
+
+        for i in range(0, len(downloadsList)):
+                self.dlFileVbox = QtWidgets.QVBoxLayout()
+                self.dlFileVbox.setObjectName("dlFileHbox_" + str(i))
+                _translate = QtCore.QCoreApplication.translate
+
+                self.dlFileInfoHbox = QtWidgets.QHBoxLayout()
+                self.dlFileInfoHbox.setContentsMargins(-1, -1, 0, -1)
+                self.dlFileInfoHbox.setObjectName("dlFileInfoHbox" + str(i))
+
+                self.dlFileInfo = QtWidgets.QLabel(self.dlFileSearchWidget)
+                self.dlFileInfo.setStyleSheet("text-align: left;\n"
+                "margin-top: 10px;\n"
+                "color: rgb(85, 0, 127);\n"
+                "font: 75 10pt \"Verdana\";")
+                self.dlFileInfo.setObjectName("dlFileInfo" + str(i))
+                info = downloadsList[i]["fileName"] + " | " + downloadsList[i]["owner"] + " | " + downloadsList[i]["size"]
+                self.dlFileInfo.setText(_translate("MainWindow", info))
+                self.dlFileInfoHbox.addWidget(self.dlFileInfo)
+                self.dlFileVbox.addLayout(self.dlFileInfoHbox)
+
+                self.dlFileProgressHbox = QtWidgets.QHBoxLayout()
+                self.dlFileProgressHbox.setObjectName("dlFileProgressHbox")
+
+                self.dlProgressBar = QtWidgets.QProgressBar(self.dlFileSearchWidget)
+                self.dlProgressBar.setProperty("value", 24)
+                self.dlProgressBar.setObjectName("dlProgressBar")
+                self.dlFileProgressHbox.addWidget(self.dlProgressBar)
+
+                self.pOr = QtWidgets.QPushButton(self.dlFileSearchWidget)
+                self.pOr.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                self.pOr.setStyleSheet("QPushButton {\n"
+                # "margin: 5px 10px;\n"
+                "font-size: 25px;\n"
+                # "border: 2px solid black;\n"
+                "border-radius: 10px;\n"
+                "padding: 4;\n"
+                # "color: rgb(85, 0, 127);\n"
+                # "background-color: rgb(85, 255, 255);"
+                # "background-color: rgb(147, 207, 250);"
+                "background-color: rgb(85, 255, 255);\n"
+                "}\n"
+                "QPushButton::hover {\n"
+                "    border: 2px solid #ffffff;\n"
+                "    background-color: #ffffff;\n"
+                "}\n"
+                )
+                self.pOr.setIcon(QtGui.QIcon('images/pause.png'))
+                self.dlFileProgressHbox.addWidget(self.pOr)
+
+                self.dlFileProgressHbox.setStretch(0, 25)
+                self.dlFileProgressHbox.setStretch(1, 1)
+                self.dlFileVbox.addLayout(self.dlFileProgressHbox)
+                self.verticalLayout_15.addLayout(self.dlFileVbox)
+
+                self.line_10 = QtWidgets.QFrame(self.dlFileSearchWidget)
+                self.line_10.setFrameShape(QtWidgets.QFrame.HLine)
+                self.line_10.setFrameShadow(QtWidgets.QFrame.Sunken)
+                self.line_10.setObjectName("line_10")
+                self.verticalLayout_15.addWidget(self.line_10)
+
         spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_15.addItem(spacerItem3)
-        self.verticalLayout_8.addLayout(self.verticalLayout_15)
+
+        self.dlFileSearchWidget.setLayout(self.verticalLayout_15)
+        #Scroll Area Properties
+        self.dlFileSrchScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.dlFileSrchScroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.dlFileSrchScroll.setWidgetResizable(True)
+        self.dlFileSrchScroll.setWidget(self.dlFileSearchWidget)
+        self.verticalLayout_8.addWidget(self.dlFileSrchScroll)
+
         self.verticalLayout_8.setStretch(0, 1)
         self.verticalLayout_8.setStretch(1, 7)
         self.verticalLayout.addLayout(self.verticalLayout_8)
