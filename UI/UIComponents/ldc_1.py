@@ -3,6 +3,26 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
+        ext_ico_path = {
+                "TXT":"images/extensions/txt.png",
+                "EXE":"images/extensions/exe.png",
+                "MP4":"images/extensions/mp4.png",
+                "MP3":"images/extensions/mp3.png",
+                "ISO":"images/extensions/iso.png",
+                "ZIP":"images/extensions/zip.png",
+                "RAR":"images/extensions/zip.png",
+                "CSV":"images/extensions/csv.png",
+                "PPT":"images/extensions/ppt.png",
+                "XLS":"images/extensions/xls.png",
+                "DOC":"images/extensions/doc.png",
+                "AVI":"images/extensions/avi.png",
+                "PDF":"images/extensions/pdf.png",
+                "JPEG":"images/extensions/image.png",
+                "PNG":"images/extensions/image.png",
+                "MKV":"images/extensions/mkv.png",
+                "file":"images/extensions/file.png"
+        }
+
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1181, 846)
         MainWindow.setWindowIcon(QtGui.QIcon('images/logo.svg'))
@@ -134,28 +154,16 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.horizontalLayout_10 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_10.setObjectName("horizontalLayout_10")
-        self.lineEdit = QtWidgets.QLineEdit(self.centralwidget)
-        self.lineEdit.setStyleSheet("text-align: left;\n"
-"padding: 3;\n"
-"padding-left: 10;\n"
-"padding-right: 10;\n"
-"border: 2px solid black;\n"
-"color: rgb(85, 0, 127);\n"
-"font: 75 11pt \"MS Sans Serif\";")
-        self.lineEdit.setObjectName("lineEdit")
-        self.horizontalLayout_10.addWidget(self.lineEdit)
-        self.pushButton = QtWidgets.QPushButton(self.centralwidget)
-        self.pushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.pushButton.setStyleSheet("padding: 4;\n"
-"padding-left: 10;\n"
-"padding-right: 10;\n"
-"color: rgb(85, 0, 127);\n"
-"background-color: rgb(255, 255, 127);\n"
-"text-align: left;\n"
-"border: 2px solid black;\n"
-"font: 75 11pt \"MS Sans Serif\";")
-        self.pushButton.setObjectName("pushButton")
-        self.horizontalLayout_10.addWidget(self.pushButton)
+        self.label_19 = QtWidgets.QLabel(self.centralwidget)
+        self.label_19.setStyleSheet("text-align: left;\n"
+        "padding-left: 10;\n"
+        "padding-right: 10px;\n"
+        "border: 2px solid black;\n"
+        "color: rgb(85, 0, 127);\n"
+        "background-color: rgb(255, 255, 127);\n"
+        "font: 75 14pt \"MS Sans Serif\";")
+        self.label_19.setObjectName("label_19")
+        self.horizontalLayout_10.addWidget(self.label_19)
         self.verticalLayout_6.addLayout(self.horizontalLayout_10)
 
         self.userSrchScroll = QtWidgets.QScrollArea()
@@ -164,67 +172,87 @@ class Ui_MainWindow(object):
         self.verticalLayout_18 = QtWidgets.QVBoxLayout()
         self.verticalLayout_18.setObjectName("verticalLayout_18")
 
-        usrSrchData = [{"name": "Mondal"}, {"name": "Utkarsh"}]
-        for i in range(0, len(usrSrchData)):
+        userFilesData = [
+                {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
+                {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
+                {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
+                {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
+                {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
+                {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
+                {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
+                {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
+                {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
+                {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
+        ]
+
+        for i in range(0, len(userFilesData)):
                 self.usrSrchHbox = QtWidgets.QHBoxLayout()
                 self.usrSrchHbox.setObjectName("srchHbox_" + str(i))
                 _translate = QtCore.QCoreApplication.translate
 
-                self.usrlabel = QtWidgets.QLabel(self.userSearchWidget)
-                self.usrlabel.setStyleSheet("text-align: left;\n"
-                "padding-left: 10;\n"
+                self.fileTypeBtn = QtWidgets.QPushButton(self.userSearchWidget)
+                self.fileTypeBtn.setStyleSheet("margin: 5px 10px;\n"
+                "font-size: 15px;\n"
+                # "border: 2px solid black;\n"
+                "border-radius: 20px;\n"
+                "padding: 4;\n"
+                # "color: rgb(85, 0, 127);\n"
+                # "background-color: rgb(85, 255, 255);"
+                "background-color: rgb(237, 237, 237);"
+                )
+                self.fileTypeBtn.setObjectName("fileTypeBtn" + str(i))
+
+                path = ext_ico_path[userFilesData[i]["type"]] if userFilesData[i]["type"] in ext_ico_path.keys() else ext_ico_path["file"]
+                self.fileTypeBtn.setIcon(QtGui.QIcon(path))
+                self.fileTypeBtn.setIconSize(QtCore.QSize(35,35))
+                self.usrSrchHbox.addWidget(self.fileTypeBtn)
+
+                self.fileName = QtWidgets.QLabel(self.userSearchWidget)
+                self.fileName.setStyleSheet("text-align: left;\n"
                 "padding-right: 10px;\n"
                 "color: rgb(85, 0, 127);\n"
                 "font: 75 11pt \"Verdana\";")
-                self.usrlabel.setObjectName("usrSrchlabel_" + str(i))
-                self.usrlabel.setText(_translate("MainWindow", usrSrchData[i]["name"].upper() + "_" + str(i) ))
-                self.usrSrchHbox.addWidget(self.usrlabel)
+                self.fileName.setObjectName("fileName" + str(i))
+                self.fileName.setText(_translate("MainWindow", userFilesData[i]["fileName"]))
+                self.fileName.setToolTip(userFilesData[i]["fileName"])
+                self.usrSrchHbox.addWidget(self.fileName)
 
-                self.msgPushButton = QtWidgets.QPushButton(self.userSearchWidget)
-                self.msgPushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-                self.msgPushButton.setStyleSheet("font-size: 15px;\n"
+                self.fileSize = QtWidgets.QLabel(self.userSearchWidget)
+                self.fileSize.setStyleSheet("text-align: left;\n"
+                "padding-right: 10px;\n"
+                "color: rgb(85, 0, 127);\n"
+                "font: 75 11pt \"Verdana\";")
+                self.fileSize.setObjectName("fileSize" + str(i))
+                self.fileSize.setText(_translate("MainWindow", userFilesData[i]["fileSize"]))
+                self.usrSrchHbox.addWidget(self.fileSize)
+
+                self.deleteBtn = QtWidgets.QPushButton(self.userSearchWidget)
+                self.deleteBtn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+                self.deleteBtn.setStyleSheet("QPushButton {\n"
+                "margin: 5px 10px;\n"
+                "font-size: 15px;\n"
                 # "border: 2px solid black;\n"
                 "border-radius: 20px;\n"
                 "padding: 4;\n"
                 # "color: rgb(85, 0, 127);\n"
                 # "background-color: rgb(85, 255, 255);"
-                # "background-color: rgb(198, 226, 247);"
+                # "background-color: rgb(147, 207, 250);"
                 "background-color: rgb(237, 237, 237);"
-                
+                "}\n"
+                "QPushButton::hover {\n"
+                "    border: 2px solid red;\n"
+                "    background-color: red;\n"
+                "}\n"
                 )
-                self.msgPushButton.setObjectName("msgPushButton_" + str(i))
-                
-                # self.msgPushButton.setText(_translate("MainWindow", "M"))
-                ##msgPushButton icon
-                self.msgPushButton.setIcon(QtGui.QIcon('images/chat.png'))
-                self.msgPushButton.setIconSize(QtCore.QSize(32,32))
-                
-                self.usrSrchHbox.addWidget(self.msgPushButton)
+                self.deleteBtn.setObjectName("deleteBtn" + str(i))
+                self.deleteBtn.setIcon(QtGui.QIcon('images/delete.png'))
+                self.deleteBtn.setIconSize(QtCore.QSize(32,32))
+                self.usrSrchHbox.addWidget(self.deleteBtn)
 
-                self.filePushButton = QtWidgets.QPushButton(self.userSearchWidget)
-                self.filePushButton.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-                self.filePushButton.setStyleSheet("font-size: 15px;\n"
-                # "border: 2px solid black;\n"
-                "border-radius: 20px;\n"
-                "padding: 4;\n"
-                # "color: rgb(85, 0, 127);\n"
-                # "background-color: rgb(85, 255, 255);"
-                # "background-color: rgb(250, 240, 200);"
-                "background-color: rgb(237, 237, 237);"
-                
-                )
-                self.filePushButton.setObjectName("filePushButton_" + str(i))
-                
-                # self.filePushButton.setText(_translate("MainWindow", "F"))
-                #filePushButton icon
-                self.filePushButton.setIcon(QtGui.QIcon('images/shared-folder.png'))
-                self.filePushButton.setIconSize(QtCore.QSize(32,32))
-                
-                self.usrSrchHbox.addWidget(self.filePushButton)
-
-                self.usrSrchHbox.setStretch(0, 5)
-                self.usrSrchHbox.setStretch(1, 1)
-                self.usrSrchHbox.setStretch(2, 1)
+                self.usrSrchHbox.setStretch(0, 1)
+                self.usrSrchHbox.setStretch(1, 4)
+                self.usrSrchHbox.setStretch(2, 2)
+                self.usrSrchHbox.setStretch(3, 1)
                 self.verticalLayout_18.addLayout(self.usrSrchHbox)
 
                 self.usrline = QtWidgets.QFrame(self.userSearchWidget)
@@ -243,6 +271,33 @@ class Ui_MainWindow(object):
         self.userSrchScroll.setWidgetResizable(True)
         self.userSrchScroll.setWidget(self.userSearchWidget)
         self.verticalLayout_6.addWidget(self.userSrchScroll)
+
+        self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
+        self.uploadBtn = QtWidgets.QPushButton(self.centralwidget)
+        self.uploadBtn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.uploadBtn.setStyleSheet("QPushButton {\n"
+        "    font: 75 18pt \"Georgia\";\n"
+        "    padding: 5px;\n"
+        "    background-color: qlineargradient(spread:pad, x1:0, y1:0.505682, x2:1, y2:0.477, stop:0 rgba(20, 47, 78, 219), stop:1 rgba(85, 98, 112, 226));\n"
+        "    color:rgba(255, 255, 255, 210);\n"
+        "    border: 2px solid black;\n"
+        "    border-radius:5px;\n"
+        "}\n"
+        "\n"
+        "QPushButton::hover {\n"
+        "    background-color: qlineargradient(spread:pad, x1:0, y1:0.505682, x2:1, y2:0.477, stop:0 rgba(40, 67, 98, 219), stop:1 rgba(105, 118, 132, 226));\n"
+        "}\n"
+        "\n"
+        "QPushButton::pressed {\n"
+        "    padding-left:5px;\n"
+        "    padding-top:5px;\n"
+        "    background-color:rgba(105, 118, 132, 200);\n"
+        "}")
+        self.uploadBtn.setObjectName("uploadBtn")
+        self.horizontalLayout_8.addWidget(self.uploadBtn)
+        self.verticalLayout_6.addLayout(self.horizontalLayout_8)
+
         self.verticalLayout_6.setStretch(0, 1)
         self.verticalLayout_6.setStretch(1, 10)
 
@@ -318,26 +373,6 @@ class Ui_MainWindow(object):
                 {"type": "MKV", "fileName": "Eternals.2021.2160p.WEB-DL.x265.10bit.SDR.DDP5.1.Atmos-NOGRP.mkv", "owner": "Utkarsh", "size": "40MB"}
                 
         ]
-        
-        ext_ico_path = {
-                "TXT":"images/extensions/txt.png",
-                "EXE":"images/extensions/exe.png",
-                "MP4":"images/extensions/mp4.png",
-                "MP3":"images/extensions/mp3.png",
-                "ISO":"images/extensions/iso.png",
-                "ZIP":"images/extensions/zip.png",
-                "RAR":"images/extensions/zip.png",
-                "CSV":"images/extensions/csv.png",
-                "PPT":"images/extensions/ppt.png",
-                "XLS":"images/extensions/xls.png",
-                "DOC":"images/extensions/doc.png",
-                "AVI":"images/extensions/avi.png",
-                "PDF":"images/extensions/pdf.png",
-                "JPEG":"images/extensions/image.png",
-                "PNG":"images/extensions/image.png",
-                "MKV":"images/extensions/mkv.png",
-                "file":"images/extensions/file.png"
-        }
 
         self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_5.setObjectName("horizontalLayout_5")
@@ -382,7 +417,6 @@ class Ui_MainWindow(object):
                 _translate = QtCore.QCoreApplication.translate
 
                 self.fileType = QtWidgets.QPushButton(self.fileSearchWidget)
-                self.fileType.setCursor(QtGui.QCursor(QtCore.Qt.BlankCursor))
                 self.fileType.setStyleSheet("margin: 5px 7px;\n"
                 "font-size: 15px;\n"
                 # "border: 2px solid black;\n"
@@ -437,7 +471,8 @@ class Ui_MainWindow(object):
 
                 self.dwnloadBtn = QtWidgets.QPushButton(self.fileSearchWidget)
                 self.dwnloadBtn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-                self.dwnloadBtn.setStyleSheet("margin: 5px 10px;\n"
+                self.dwnloadBtn.setStyleSheet("QPushButton {\n"
+                "margin: 5px 10px;\n"
                 "font-size: 15px;\n"
                 # "border: 2px solid black;\n"
                 "border-radius: 20px;\n"
@@ -446,6 +481,11 @@ class Ui_MainWindow(object):
                 # "background-color: rgb(85, 255, 255);"
                 # "background-color: rgb(147, 207, 250);"
                 "background-color: rgb(237, 237, 237);"
+                "}\n"
+                "QPushButton::hover {\n"
+                "    border: 2px solid #ffffff;\n"
+                "    background-color: #ffffff;\n"
+                "}\n"
                 )
                 self.dwnloadBtn.setObjectName("dwnloadBtn_" + str(i))
                 
@@ -529,8 +569,8 @@ class Ui_MainWindow(object):
         _translate = QtCore.QCoreApplication.translate
         MainWindow.setWindowTitle(_translate("MainWindow", "MainWindow"))
         self.label.setText(_translate("MainWindow", "CURRENT ONLINE USERS"))
-        self.lineEdit.setPlaceholderText(_translate("MainWindow", "Search Users"))
-        self.pushButton.setText(_translate("MainWindow", "Search"))
+        self.label_19.setText(_translate("MainWindow", "YOUR FILES"))
+        self.uploadBtn.setText(_translate("MainWindow", "INSERT A FILE"))
         self.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Search Files"))
         self.pushButton_2.setText(_translate("MainWindow", "Search"))
         self.label_2.setText(_translate("MainWindow", "DOWNLOADS"))
