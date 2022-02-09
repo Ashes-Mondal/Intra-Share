@@ -88,7 +88,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_9 = QtWidgets.QVBoxLayout()
         self.verticalLayout_9.setObjectName("verticalLayout_9")
 
-        usrData = [{"name": "Ashes"}, {"name": "Utkarsh"}, {"name": "Mondal"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}]
+        usrData = [{"name": "Ashes"}, {"name": "Utkarsh"}
+                #    , {"name": "Mondal"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}, {"name": "Utkarsh"}
+                   ]
         for i in range(0, len(usrData)):
                 self.usrHbox = QtWidgets.QHBoxLayout()
                 self.usrHbox.setObjectName("hbox_" + str(i))
@@ -204,14 +206,14 @@ class Ui_MainWindow(object):
         userFilesData = [
                 {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
                 {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
-                {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
-                {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
-                {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
-                {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
-                {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
-                {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
-                {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
-                {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
+                # {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
+                # {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
+                # {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
+                # {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
+                # {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
+                # {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
+                # {"type": "ZIP", "fileName": "ISI Dark Secrets", "fileSize": "50GB"},
+                # {"type": "DOC", "fileName": "US-Army Plans", "fileSize": "50GB"},
         ]
 
         for i in range(0, len(userFilesData)):

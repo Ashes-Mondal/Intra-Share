@@ -244,6 +244,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             self.clientCredentials['username'], self.server_addr, self.activeClients)
         self.closeClient()
         self.closeEvent.set()
+        sys.exit()
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 
     ##!---------- > Messaging methods < ------------!##

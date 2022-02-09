@@ -65,7 +65,7 @@ class Server(Functionalities):
             try:
                 client = self.server.accept()
                 conn, addr = client
-
+                
                 # Initial checks before allowing client to send requests
                 try:
                     if self._server_password != None:
@@ -135,8 +135,10 @@ class Server(Functionalities):
 
 
     def closeServer(self):
-        print(
-            f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}Closing server socket...')
+        ##close all openned connections
+        for clientID,clientOBJ in self.allClients.items():
+            self._closeClientConnection(clientID)
+        print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]}Closing server socket...')
         self.server.close()
         sys.exit()  # exists from the thread
 

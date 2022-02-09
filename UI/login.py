@@ -2,6 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from .options import Options_MainWindow
 from .userWindow import UserWindow
 from .UIComponents.MainHeading import MainHeading
+from .MainWindow import MainWindow
 
 def validateIP(serverip):
     dotIndex = []
@@ -25,15 +26,15 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.clientIns = clientIns
         # self.MainWindow = QtWidgets.QMainWindow()
     
-    def closeEvent(self, event):
-        reply = QtWidgets.QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the window?',
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+    # def closeEvent(self, event):
+    #     reply = QtWidgets.QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the window?',
+    #             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
 
-        if reply == QtWidgets.QMessageBox.Yes:
-            event.accept()
-            print('Window closed')
-        else:
-            event.ignore()
+    #     if reply == QtWidgets.QMessageBox.Yes:
+    #         event.accept()
+    #         print('Window closed')
+    #     else:
+    #         event.ignore()
     
     def startUI(self):
         self.setObjectName("MainWindow")
@@ -194,15 +195,18 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.label_error.setText(_translate("MainWindow", ""))
 
     def validateCredentials(self):
-        # userid = "Agni"
-        # password = "password"
-        # serverip = "192.168.43.244"
-        # port = 9999
+        
         userid = self.uid_input.text()
         password = self.password_input.text()
         serverip = self.ip_input.text()
         port = self.port_input.text()
         serverPassword = self.password_input_2.text()
+
+        # userid = "Agni"
+        password = "password"
+        serverip = "192.168.29.39"
+        port = 9999
+        
         try:
             allValid = True
             errstr = ""
@@ -234,9 +238,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                     clientCredentials=credentials
                 )
                 # move to main application file
-                self.hide()
-                self.ui = UserWindow(self.clientIns, userid)
-                self.ui.setupUi()
+                # self.hide()
+                self.mainApp = MainWindow(self,self.clientIns)
+                self.mainApp.setupUi()
+                self.mainApp.show()
+                self.submit_button.setEnabled(True)
         except Exception as error:
             self.submit_button.setEnabled(True)
             if str(error) == "timed out":

@@ -3,6 +3,7 @@ from PyQt5 import QtWidgets
 class Heading(QtWidgets.QLabel):
     def __init__(self,text: str,parent):
         super(Heading, self).__init__(text,parent)
+        self.setFixedHeight(40)
         self.setEnabled(True)
         self.setStyleSheet(
             "text-align: left;\n"

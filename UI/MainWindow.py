@@ -11,8 +11,10 @@ from UI.components.utils import usrData, userFilesData, ext_ico_path, fileSrchDa
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(MainWindow, self).__init__()
+    def __init__(self,parent,clientIns):
+        super(MainWindow, self).__init__(parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.clientIns = clientIns
         self.setObjectName("MainWindow")
         self.resize(1181, 846)
         self.setWindowIcon(QtGui.QIcon('images/logo.svg'))
@@ -20,14 +22,16 @@ class MainWindow(QtWidgets.QMainWindow):
         self.centralwidget.setObjectName("centralwidget")
 
     def closeEvent(self, event):
-        reply = QtWidgets.QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the window?',
+        reply = QtWidgets.QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the Application?',
                 QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
 
         if reply == QtWidgets.QMessageBox.Yes:
             event.accept()
+            self.clientIns.closeClient()
+            self.parent().show()
         else:
             event.ignore()
-        
+
     
     def setupUi(self):
         #****** Defining layouts ***** #
@@ -63,19 +67,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.usrSearchLayout = UserSearch(self.centralwidget)
         self.verticalLayout_5.addLayout(self.usrSearchLayout)
-        for user in usrData:
-            usr = User(user, self.userWidget)
+        for clientID,clientOBJ in self.clientIns.activeClients.items():
+            usr = User(clientOBJ, self.userWidget)
             # divider
-            self.usrline = QtWidgets.QFrame(self.centralwidget)
-            self.usrline.setFrameShape(QtWidgets.QFrame.HLine)
-            self.usrline.setFrameShadow(QtWidgets.QFrame.Sunken)
-            self.usrline.setObjectName("usrline_" + user["name"])
+            usrline = QtWidgets.QFrame(self.centralwidget)
+            usrline.setFrameShape(QtWidgets.QFrame.HLine)
+            usrline.setFrameShadow(QtWidgets.QFrame.Sunken)
+            usrline.setObjectName("usrline_" + str(clientID))
             # adding to layout and widget
             self.verticalLayout_9.addLayout(usr)
-            self.verticalLayout_9.addWidget(self.usrline)
+            self.verticalLayout_9.addWidget(usrline)
 
-        spacerItem = QtWidgets.QSpacerItem(
-            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_9.addItem(spacerItem)
         self.userWidget.setLayout(self.verticalLayout_9)
         # Scroll Area Properties
@@ -304,14 +307,13 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.setWindowTitle(_translate("MainWindow", "DC++"))
         self.heading1.setText(_translate("MainWindow", "CURRENT ONLINE USERS"))
         self.usrSearchLayout.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Search Files"))
         self.usrSearchLayout.pushButton_2.setText(_translate("MainWindow", "Search"))
 
         self.heading2.setText(_translate("MainWindow", "YOUR FILES"))
-        self.InsertFilesLayout.insertFilesBtn.setText(
-            _translate("MainWindow", "INSERT FILES"))
+        # self.InsertFilesLayout.insertFilesBtn.setText(_translate("MainWindow", "INSERT FILES"))
 
         self.fileSearchLayout.lineEdit_2.setPlaceholderText(
             _translate("MainWindow", "Search Files"))
