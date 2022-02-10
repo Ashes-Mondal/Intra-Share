@@ -2,10 +2,11 @@ from PyQt5 import QtWidgets, QtGui,QtCore
 
 
 class User(QtWidgets.QHBoxLayout):
-    def __init__(self, clientOBJ, parent):
+    def __init__(self, clientOBJ, parent, msgCurrentUser):
         super(User, self).__init__()
         self.clientOBJ = clientOBJ
         self.parent = parent
+        self.msgCurrentUser = msgCurrentUser
         self.setObjectName("_Hbox" + clientOBJ.username)
         try:
             #username_label
@@ -30,6 +31,7 @@ class User(QtWidgets.QHBoxLayout):
             self.msgPushButton.setObjectName("msgPushButton" + str(clientOBJ.clientID))
             self.msgPushButton.setIcon(QtGui.QIcon('images/chat.png'))
             self.msgPushButton.setIconSize(QtCore.QSize(32, 32))
+            self.msgPushButton.clicked.connect(self.callCurrUser)
 
             # filePushButton
             self.filePushButton = QtWidgets.QPushButton(self.parent)
@@ -55,3 +57,6 @@ class User(QtWidgets.QHBoxLayout):
             self.setStretch(2, 1)
         except Exception as err:
             print(err)
+    
+    def callCurrUser(self):
+        self.msgCurrentUser(self.clientOBJ)

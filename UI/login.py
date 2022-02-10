@@ -204,7 +204,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         # userid = "Agni"
         password = "password"
-        serverip = "192.168.29.39"
+        serverip = "192.168.43.244"
         port = 9999
         
         try:
@@ -242,6 +242,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                 self.mainApp = MainWindow(self,self.clientIns)
                 self.mainApp.setupUi()
                 self.mainApp.show()
+                self.hide()
                 self.submit_button.setEnabled(True)
         except Exception as error:
             self.submit_button.setEnabled(True)
