@@ -1,3 +1,4 @@
+import time
 from PyQt5 import QtCore, QtGui, QtWidgets
 from UI.components.Heading import Heading
 from UI.components.User import User
@@ -9,6 +10,13 @@ from UI.components.File import File
 from UI.components.DownloadFile import DownloadFile
 from UI.components.utils import usrData, userFilesData, ext_ico_path, fileSrchData,downloadsList
 
+class BtnThread(QtCore.QThread):
+    my_signal = QtCore.pyqtSignal()
+    def run(self):
+        while True:
+            print("BtnThread:\n")
+            self.my_signal.emit()
+            time.sleep(5)
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self,parent,clientIns):
@@ -60,6 +68,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.userScroll = QtWidgets.QScrollArea()
         self.userWidget = QtWidgets.QWidget()
+        self.allUsers = []
 
         self.heading1 = Heading("CURRENT ONLINE USERS", self.centralwidget)
         self.verticalLayout_10.addWidget(self.heading1)
@@ -67,19 +76,21 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.usrSearchLayout = UserSearch(self.centralwidget)
         self.verticalLayout_5.addLayout(self.usrSearchLayout)
-        for clientID,clientOBJ in self.clientIns.activeClients.items():
-            usr = User(clientOBJ, self.userWidget)
-            # divider
-            usrline = QtWidgets.QFrame(self.centralwidget)
-            usrline.setFrameShape(QtWidgets.QFrame.HLine)
-            usrline.setFrameShadow(QtWidgets.QFrame.Sunken)
-            usrline.setObjectName("usrline_" + str(clientID))
-            # adding to layout and widget
-            self.verticalLayout_9.addLayout(usr)
-            self.verticalLayout_9.addWidget(usrline)
 
-        spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_9.addItem(spacerItem)
+        self.StartButtonEvent()
+        # for clientID,clientOBJ in self.clientIns.activeClients.items():
+        #     usr = User(clientOBJ, self.userWidget)
+        #     # divider
+        #     usrline = QtWidgets.QFrame(self.centralwidget)
+        #     usrline.setFrameShape(QtWidgets.QFrame.HLine)
+        #     usrline.setFrameShadow(QtWidgets.QFrame.Sunken)
+        #     usrline.setObjectName("usrline_" + str(clientID))
+        #     # adding to layout and widget
+        #     self.verticalLayout_9.addLayout(usr)
+        #     self.verticalLayout_9.addWidget(usrline)
+
+        # spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        # self.verticalLayout_9.addItem(spacerItem)
         self.userWidget.setLayout(self.verticalLayout_9)
         # Scroll Area Properties
         self.userScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
@@ -307,7 +318,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("MainWindow", "DC++"))
+        title = "Welcome " + self.clientIns.clientCredentials["username"] + " to DC++"
+        self.setWindowTitle(_translate("MainWindow", title))
         self.heading1.setText(_translate("MainWindow", "CURRENT ONLINE USERS"))
         self.usrSearchLayout.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Search Files"))
         self.usrSearchLayout.pushButton_2.setText(_translate("MainWindow", "Search"))
@@ -326,6 +338,60 @@ class MainWindow(QtWidgets.QMainWindow):
         self.label_15.setText(_translate("MainWindow", "Size"))
 
         self.heading3.setText(_translate("MainWindow", "DOWNLOADS"))
+
+    def StartButtonEvent(self):
+        self.btnThrd = BtnThread()
+        self.btnThrd.finished.connect(self.thread_finished)
+        self.btnThrd.my_signal.connect(self.createBtns)
+        self.btnThrd.start()
+
+    def deleteUserProps(self):
+        try:
+            if len(self.allUsers) >= 1:
+                for i in range(0, len(self.allUsers) - 1):
+                    self.allUsers[i][0].removeWidget(self.allUsers[i][0].username_label)
+                    self.allUsers[i][0].removeWidget(self.allUsers[i][0].msgPushButton)
+                    self.allUsers[i][0].removeWidget(self.allUsers[i][0].filePushButton)
+                    self.verticalLayout_9.removeWidget(self.allUsers[i][1])
+                    self.verticalLayout_9.removeItem(self.allUsers[i][0])
+                self.verticalLayout_9.removeItem(self.allUsers[-1])
+            self.allUsers.clear()
+        except Exception as err:
+            print("err: ", err)
+
+
+    # Create buttons in thread
+    def createBtns(self):
+        try:
+            print("\np0:")
+            print(self.allUsers)
+
+            # delete existing widgets and layouts
+            self.deleteUserProps()
+
+            time.sleep(0.05)
+            for clientID,clientOBJ in self.clientIns.activeClients.items():
+                if clientOBJ.online:
+                    usr = User(clientOBJ, self.userWidget)
+                    # divider
+                    usrline = QtWidgets.QFrame(self.userWidget)
+                    usrline.setFrameShape(QtWidgets.QFrame.HLine)
+                    usrline.setFrameShadow(QtWidgets.QFrame.Sunken)
+                    usrline.setObjectName("usrline_" + str(clientID))
+                    # adding to layout and widget
+                    self.verticalLayout_9.addLayout(usr)
+                    self.verticalLayout_9.addWidget(usrline)
+                    self.allUsers.append((usr, usrline))
+                # print(self.allUsers)
+
+            spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+            self.verticalLayout_9.addItem(spacerItem)
+            self.allUsers.append(spacerItem)
+        except Exception as err:
+            print("ERROR: ", err)
+
+    def thread_finished(self):
+        print("finished\n")
 
 if __name__ == "__main__":
     import sys
