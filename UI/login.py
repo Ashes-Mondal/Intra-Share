@@ -238,7 +238,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                     clientCredentials=credentials
                 )
                 # move to main application file
-                # self.hide()
+                self.hide()
                 self.mainApp = MainWindow(self,self.clientIns)
                 self.mainApp.setupUi()
                 self.mainApp.show()
