@@ -7,6 +7,7 @@ from UI.components.InsertFiles import InsertFiles
 from UI.components.FileSearch import FileSearch
 from UI.components.UserSearch import UserSearch
 from UI.components.File import File
+from UI.UIComponents.MessageWindow import MessageWindow
 from UI.components.DownloadFile import DownloadFile
 from UI.components.utils import usrData, userFilesData, ext_ico_path, fileSrchData,downloadsList
 
@@ -14,7 +15,6 @@ class BtnThread(QtCore.QThread):
     my_signal = QtCore.pyqtSignal()
     def run(self):
         while True:
-            print("BtnThread:\n")
             self.my_signal.emit()
             time.sleep(5)
 
@@ -77,20 +77,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.usrSearchLayout = UserSearch(self.centralwidget)
         self.verticalLayout_5.addLayout(self.usrSearchLayout)
 
+        # Btns in Thread
         self.StartButtonEvent()
-        # for clientID,clientOBJ in self.clientIns.activeClients.items():
-        #     usr = User(clientOBJ, self.userWidget)
-        #     # divider
-        #     usrline = QtWidgets.QFrame(self.centralwidget)
-        #     usrline.setFrameShape(QtWidgets.QFrame.HLine)
-        #     usrline.setFrameShadow(QtWidgets.QFrame.Sunken)
-        #     usrline.setObjectName("usrline_" + str(clientID))
-        #     # adding to layout and widget
-        #     self.verticalLayout_9.addLayout(usr)
-        #     self.verticalLayout_9.addWidget(usrline)
 
-        # spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        # self.verticalLayout_9.addItem(spacerItem)
         self.userWidget.setLayout(self.verticalLayout_9)
         # Scroll Area Properties
         self.userScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
@@ -363,16 +352,15 @@ class MainWindow(QtWidgets.QMainWindow):
     # Create buttons in thread
     def createBtns(self):
         try:
-            print("\np0:")
-            print(self.allUsers)
-
+            # print("\np0:")
+            # print(self.allUsers)
             # delete existing widgets and layouts
             self.deleteUserProps()
 
             time.sleep(0.05)
             for clientID,clientOBJ in self.clientIns.activeClients.items():
                 if clientOBJ.online:
-                    usr = User(clientOBJ, self.userWidget)
+                    usr = User(clientOBJ, self.userWidget, self.msgCurrentUser)
                     # divider
                     usrline = QtWidgets.QFrame(self.userWidget)
                     usrline.setFrameShape(QtWidgets.QFrame.HLine)
@@ -389,6 +377,17 @@ class MainWindow(QtWidgets.QMainWindow):
             self.allUsers.append(spacerItem)
         except Exception as err:
             print("ERROR: ", err)
+
+    def msgCurrentUser(self, clientOBJ):
+        print("clicked: ", clientOBJ.username, clientOBJ.clientID)
+        self.user = MessageWindow(clientOBJ.username, self.clientIns, clientOBJ.clientID, self.clientIns.clientCredentials["username"], self)
+        # self.user.msgInput.returnPressed.connect(self.sendMessageFunc)
+        # self.user.sendMsgBtn.clicked.connect(self.sendMessageFunc)
+        # try:
+        #     self.__startSendingMessages(self.clientID)
+        # except Exception as err:
+        #     print(err)
+        self.user.show()
 
     def thread_finished(self):
         print("finished\n")

@@ -2,11 +2,14 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from threading import Thread, currentThread
 
 class MessageWindow(QtWidgets.QMainWindow):
-    def __init__(self, label, clientIns, clientID, userid) -> None:
-        super(MessageWindow, self).__init__()
+    def __init__(self, label, clientIns, clientID, userid, parent) -> None:
+        super(MessageWindow, self).__init__(parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.label = label
         self.clientIns = clientIns
         self.clientID = clientID
+        # self.parent = parent
+        self.setParent(parent)
 
         try:
             self.__startSendingMessages(clientID)
@@ -84,7 +87,7 @@ class MessageWindow(QtWidgets.QMainWindow):
         self.sendMsgBtn.setObjectName("sendMsgBtn")
 
         self.retranslateUi()
-        self.setWindowTitle(self.label + " calling " + userid)
+        self.setWindowTitle(userid + " calling " + self.label)
         self.setCentralWidget(self.centralwidget)
 
     def retranslateUi(self):
