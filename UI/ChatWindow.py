@@ -39,6 +39,7 @@ class ChatWindow(QtWidgets.QMainWindow):
         self.parent = parent
         self.receiverClientObj = receiverClientObj
         self.clientIns = clientIns
+        self.setFixedSize(969, 840)
         self.setupUi()
         try:
             self.startChatting(clientID=self.receiverClientObj.clientID)

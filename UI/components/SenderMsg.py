@@ -17,7 +17,8 @@ class SenderMsg(QtWidgets.QHBoxLayout):
             "background-color: rgb(0, 0, 0);\n"
             "background-color: rgb(0, 85, 0);\n"
             "border: 2px solid rgb(255, 255, 255);\n"
-            "border-radius: 10px"
+            "border-radius: 10px;\n"
+            "font-size: 20px\n"
         )
         self.label.setWordWrap(True)
         self.label.setObjectName("label"+randomSTR)
