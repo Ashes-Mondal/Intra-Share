@@ -9,17 +9,22 @@ from UI.components.UserSearch import UserSearch
 from UI.components.File import File
 from UI.UIComponents.MessageWindow import MessageWindow
 from UI.components.DownloadFile import DownloadFile
-from UI.components.utils import usrData, userFilesData, ext_ico_path, fileSrchData,downloadsList
+from UI.components.utils import usrData, userFilesData, ext_ico_path, fileSrchData, downloadsList
+from .ChatWindow import ChatWindow
+from threading import Thread, currentThread
+
 
 class BtnThread(QtCore.QThread):
     my_signal = QtCore.pyqtSignal()
+
     def run(self):
         while True:
             self.my_signal.emit()
             time.sleep(5)
 
+
 class MainWindow(QtWidgets.QMainWindow):
-    def __init__(self,parent,clientIns):
+    def __init__(self, parent, clientIns):
         super(MainWindow, self).__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.clientIns = clientIns
@@ -31,7 +36,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def closeEvent(self, event):
         reply = QtWidgets.QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the Application?',
-                QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
+                                               QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
 
         if reply == QtWidgets.QMessageBox.Yes:
             event.accept()
@@ -40,7 +45,6 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             event.ignore()
 
-    
     def setupUi(self):
         #****** Defining layouts ***** #
         self.horizontalLayout = QtWidgets.QHBoxLayout()
@@ -215,8 +219,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.verticalLayout_13.addWidget(self.line_9)
 
         for file in fileSrchData:
-            fileLayout = File(file,self.fileSearchWidget)
-            #divider
+            fileLayout = File(file, self.fileSearchWidget)
+            # divider
             self.line_7 = QtWidgets.QFrame(self.fileSearchWidget)
             self.line_7.setFrameShape(QtWidgets.QFrame.HLine)
             self.line_7.setFrameShadow(QtWidgets.QFrame.Sunken)
@@ -224,20 +228,23 @@ class MainWindow(QtWidgets.QMainWindow):
             self.verticalLayout_13.addLayout(fileLayout)
             self.verticalLayout_13.addWidget(self.line_7)
 
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        spacerItem2 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_13.addItem(spacerItem2)
 
         self.fileSearchWidget.setLayout(self.verticalLayout_13)
         # Scroll Area Properties
-        self.fileSrchScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.fileSrchScroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.fileSrchScroll.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOn)
+        self.fileSrchScroll.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
         self.fileSrchScroll.setWidgetResizable(True)
         self.fileSrchScroll.setWidget(self.fileSearchWidget)
         self.verticalLayout_7.addWidget(self.fileSrchScroll)
         self.verticalLayout_7.setStretch(0, 1)
         self.verticalLayout_7.setStretch(1, 10)
         self.verticalLayout.addLayout(self.verticalLayout_7)
-        #divider
+        # divider
         self.line = QtWidgets.QFrame(self.centralwidget)
         self.line.setFrameShape(QtWidgets.QFrame.HLine)
         self.line.setFrameShadow(QtWidgets.QFrame.Sunken)
@@ -248,16 +255,16 @@ class MainWindow(QtWidgets.QMainWindow):
         ##***************** "Download section **************##
         self.verticalLayout_8 = QtWidgets.QVBoxLayout()
         self.verticalLayout_8.setObjectName("verticalLayout_8")
-        
+
         self.verticalLayout_16 = QtWidgets.QVBoxLayout()
         self.verticalLayout_16.setObjectName("verticalLayout_16")
-        
+
         self.verticalLayout_15 = QtWidgets.QVBoxLayout()
         self.verticalLayout_15.setObjectName("verticalLayout_15")
 
         self.dlFileSrchScroll = QtWidgets.QScrollArea()
         self.dlFileSearchWidget = QtWidgets.QWidget()
-        
+
         self.heading3 = Heading("Downloads", self.centralwidget)
         self.verticalLayout_16.addWidget(self.heading3)
         self.verticalLayout_8.addLayout(self.verticalLayout_16)
@@ -265,25 +272,28 @@ class MainWindow(QtWidgets.QMainWindow):
         for details in downloadsList:
             dlFileVbox = DownloadFile(details, self.dlFileSearchWidget)
             self.verticalLayout_15.addLayout(dlFileVbox)
-            #divider
+            # divider
             self.line_10 = QtWidgets.QFrame(self.dlFileSearchWidget)
             self.line_10.setFrameShape(QtWidgets.QFrame.HLine)
             self.line_10.setFrameShadow(QtWidgets.QFrame.Sunken)
             self.line_10.setObjectName("line_10")
             self.verticalLayout_15.addWidget(self.line_10)
-        
-        spacerItem3 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+
+        spacerItem3 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_15.addItem(spacerItem3)
         self.dlFileSearchWidget.setLayout(self.verticalLayout_15)
-        #Scroll Area Properties
-        self.dlFileSrchScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.dlFileSrchScroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        # Scroll Area Properties
+        self.dlFileSrchScroll.setVerticalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOn)
+        self.dlFileSrchScroll.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
         self.dlFileSrchScroll.setWidgetResizable(True)
         self.dlFileSrchScroll.setWidget(self.dlFileSearchWidget)
         self.verticalLayout_8.addWidget(self.dlFileSrchScroll)
 
         # self.verticalLayout_8.addLayout(self.verticalLayout_15)
-        
+
         self.verticalLayout_8.setStretch(0, 1)
         self.verticalLayout_8.setStretch(1, 7)
         self.verticalLayout.addLayout(self.verticalLayout_8)
@@ -307,11 +317,14 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        title = "Welcome " + self.clientIns.clientCredentials["username"] + " to DC++"
+        title = "Welcome " + \
+            self.clientIns.clientCredentials["username"] + " to DC++"
         self.setWindowTitle(_translate("MainWindow", title))
         self.heading1.setText(_translate("MainWindow", "CURRENT ONLINE USERS"))
-        self.usrSearchLayout.lineEdit_2.setPlaceholderText(_translate("MainWindow", "Search Files"))
-        self.usrSearchLayout.pushButton_2.setText(_translate("MainWindow", "Search"))
+        self.usrSearchLayout.lineEdit_2.setPlaceholderText(
+            _translate("MainWindow", "Search Files"))
+        self.usrSearchLayout.pushButton_2.setText(
+            _translate("MainWindow", "Search"))
 
         self.heading2.setText(_translate("MainWindow", "YOUR FILES"))
         # self.InsertFilesLayout.insertFilesBtn.setText(_translate("MainWindow", "INSERT FILES"))
@@ -338,9 +351,12 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             if len(self.allUsers) >= 1:
                 for i in range(0, len(self.allUsers) - 1):
-                    self.allUsers[i][0].removeWidget(self.allUsers[i][0].username_label)
-                    self.allUsers[i][0].removeWidget(self.allUsers[i][0].msgPushButton)
-                    self.allUsers[i][0].removeWidget(self.allUsers[i][0].filePushButton)
+                    self.allUsers[i][0].removeWidget(
+                        self.allUsers[i][0].username_label)
+                    self.allUsers[i][0].removeWidget(
+                        self.allUsers[i][0].msgPushButton)
+                    self.allUsers[i][0].removeWidget(
+                        self.allUsers[i][0].filePushButton)
                     self.verticalLayout_9.removeWidget(self.allUsers[i][1])
                     self.verticalLayout_9.removeItem(self.allUsers[i][0])
                 self.verticalLayout_9.removeItem(self.allUsers[-1])
@@ -348,8 +364,8 @@ class MainWindow(QtWidgets.QMainWindow):
         except Exception as err:
             print("err: ", err)
 
-
     # Create buttons in thread
+
     def createBtns(self):
         try:
             # print("\np0:")
@@ -357,8 +373,8 @@ class MainWindow(QtWidgets.QMainWindow):
             # delete existing widgets and layouts
             self.deleteUserProps()
 
-            time.sleep(0.05)
-            for clientID,clientOBJ in self.clientIns.activeClients.items():
+            # time.sleep(0.05)
+            for clientID, clientOBJ in self.clientIns.activeClients.items():
                 if clientOBJ.online:
                     usr = User(clientOBJ, self.userWidget, self.msgCurrentUser)
                     # divider
@@ -372,25 +388,21 @@ class MainWindow(QtWidgets.QMainWindow):
                     self.allUsers.append((usr, usrline))
                 # print(self.allUsers)
 
-            spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+            spacerItem = QtWidgets.QSpacerItem(
+                20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
             self.verticalLayout_9.addItem(spacerItem)
             self.allUsers.append(spacerItem)
         except Exception as err:
             print("ERROR: ", err)
 
     def msgCurrentUser(self, clientOBJ):
-        print("clicked: ", clientOBJ.username, clientOBJ.clientID)
-        self.user = MessageWindow(clientOBJ.username, self.clientIns, clientOBJ.clientID, self.clientIns.clientCredentials["username"], self)
-        # self.user.msgInput.returnPressed.connect(self.sendMessageFunc)
-        # self.user.sendMsgBtn.clicked.connect(self.sendMessageFunc)
-        # try:
-        #     self.__startSendingMessages(self.clientID)
-        # except Exception as err:
-        #     print(err)
+        # print("clicked: ", clientOBJ.username, clientOBJ.clientID)
+        self.user = ChatWindow(clientOBJ, self.clientIns, self)
         self.user.show()
 
     def thread_finished(self):
         print("finished\n")
+
 
 if __name__ == "__main__":
     import sys

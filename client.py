@@ -233,7 +233,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
 
     def savefilebeforclose(self):
         for clientID, obj in self.activeClients.items():
-            for fileID,file in obj.fileTaking.items():
+            for fileID, file in obj.fileTaking.items():
                 # client.fileTaking[fileID] = [start, completed_bytes , True , pause1]
                 if(file[2] == False):
                     file[3].set()
@@ -259,9 +259,10 @@ class Client(ServerInteraction, FileSharingFunctionalities):
 
         if clientID in self.activeMessagingClient.keys():
             raise Exception("Already talking to the client!")
+        self.activeMessagingClient[clientID] = 1
         print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]} {bcolors["UNDERLINE"]}{self.clientCredentials["username"]}{bcolors["ENDC"]} can now send messages to {bcolors["UNDERLINE"]}{receiver.username}{bcolors["ENDC"]}')
 
-    def sendMessage(self, receiverID, message):
+    def sendMessage(self, receiverID: int, message: str):
         receiver = self.activeClients[receiverID]
         if receiver.online == False:
             raise Exception("Client not online!")
@@ -292,6 +293,14 @@ class Client(ServerInteraction, FileSharingFunctionalities):
                 f'{bcolors["FAIL"]}[CLIENT]{bcolors["ENDC"]}Error sending message!')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             raise error
+
+    def stopSendingMessages(self, clientID: int):
+        with self._lock:
+            if clientID in self.activeMessagingClient.keys():
+                username = self.activeClients[clientID].username
+                self.activeMessagingClient.pop(clientID)
+                print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]} Stopping messenging with {bcolors["UNDERLINE"]}{username}{bcolors["ENDC"]}')
+                
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 
     ##!--------------- > Search methods < ---------------!##
@@ -347,12 +356,11 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         start = 0
         end = (filesize//4096) + 1 if (filesize % 4096) else 0
         completed_bytes = 0
-        
+
         client = self.activeClients[clientID]
         if fileID in client.fileTaking.keys():
             start = client.fileTaking[fileID][0]
             completed_bytes = client.fileTaking[fileID][1]
-        
 
         # get address from server ,create socket and then establish connection
         clientAddr = self.getAddrOfClient(clientID)
@@ -379,8 +387,10 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         if response["error"] != None:
             raise Exception(response["error"])
         pause1 = Event()
-        file = (fileID, start, end, filesize, filename, download_directory,completed_bytes)
-        t1 = Thread(target=self._receiveFile, args=(client,conn, pause1,file), daemon=True, name=f'_receiveFile_{filename}')
+        file = (fileID, start, end, filesize, filename,
+                download_directory, completed_bytes)
+        t1 = Thread(target=self._receiveFile, args=(
+            client, conn, pause1, file), daemon=True, name=f'_receiveFile_{filename}')
         t2 = Thread(target=self._clientInteraction, args=(
             conn, pause1), daemon=True, name=f'_clientInteraction_{filename}')
         t1.start()
@@ -391,7 +401,8 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             with self.filelock:
                 del(client.fileTaking[fileID])
         conn.close()
-        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Download completed 😊\n>>', end='')
+        print(
+            f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Download completed 😊\n>>', end='')
         sys.exit(0)
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 

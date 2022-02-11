@@ -10,7 +10,7 @@ class User(QtWidgets.QHBoxLayout):
         self.setObjectName("_Hbox" + clientOBJ.username)
         try:
             #username_label
-            self.username_label = QtWidgets.QLabel(clientOBJ.username.upper(), self.parent)
+            self.username_label = QtWidgets.QLabel(clientOBJ.username, self.parent)
             self.username_label.setStyleSheet(
                 "text-align: left;\n"
                 "padding-left: 10;\n"
@@ -59,4 +59,7 @@ class User(QtWidgets.QHBoxLayout):
             print(err)
     
     def callCurrUser(self):
-        self.msgCurrentUser(self.clientOBJ)
+        try:
+            self.msgCurrentUser(self.clientOBJ)
+        except Exception as err:
+            print(err)

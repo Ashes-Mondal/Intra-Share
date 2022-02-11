@@ -1,22 +1,87 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from components.SenderMsg import SenderMsg
-from components.UserMsg import UserMsg
-from components.ChatInput import ChatInput
+from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+from .components.SenderMsg import SenderMsg
+from .components.UserMsg import UserMsg
+from .components.ChatInput import ChatInput
+from threading import Thread, currentThread
+
+
+class receiveMessagesThread(QtCore.QThread):
+    my_signal = QtCore.pyqtSignal(int, str)
+
+    def __init__(self, senderID: int,clientIns):
+        super(QThread, self).__init__()
+        self.senderID = senderID
+        self.clientIns = clientIns
+        self._isRunning = True
+
+    def run(self):
+        try:
+            print("Unread Messages count:",self.clientIns.activeClients[self.senderID].messages.qsize())
+            while self._isRunning:
+                try:
+                    message = self.clientIns.activeClients[self.senderID].messages.get_nowait()
+                except Exception as e:
+                    if self._isRunning:continue
+                    else: raise e
+                self.my_signal.emit(self.senderID, message)
+        except Exception as err:
+            print("Closing Thread:",currentThread().getName())
+    
+    def stop(self):
+        self._isRunning = False
 
 
 class ChatWindow(QtWidgets.QMainWindow):
-    def __init__(self):
-        super(ChatWindow, self).__init__()
+    def __init__(self, receiverClientObj, clientIns, parent):
+        super(ChatWindow, self).__init__(parent)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.parent = parent
+        self.receiverClientObj = receiverClientObj
+        self.clientIns = clientIns
         self.setupUi()
-        self.show()
+        try:
+            self.startChatting(clientID=self.receiverClientObj.clientID)
+        except Exception as e:
+            print(e)
+            self.close()
 
-    def onClick_send(self,message):
-        if(len(message) == 0):return
-        print(message)
-        ##add message and spacer
-        hbox1 = UserMsg(parent=self.userWidget,message=message)
+    def closeEvent(self, event):
+        self.clientIns.stopSendingMessages(self.receiverClientObj.clientID)
+        self.receiveMessagesThread.stop()
+        self.receiveMessagesThread.quit()
+        self.receiveMessagesThread.wait()
+        event.accept()
+
+    def onClick_send(self, message):
+        if(len(message) == 0):
+            return
+        # print(message)
+        try:
+            self.clientIns.sendMessage(
+                receiverID=self.receiverClientObj.clientID, message=message)
+            # add message and spacer
+            hbox1 = UserMsg(parent=self.chatWidget, message=message)
+            self.verticalLayout_2.insertLayout(
+                len(self.verticalLayout_2)-1, hbox1)
+        except Exception as error:
+            print(error)
+            raise error
+
+    def StartButtonEvent(self):
+        self.receiveMessagesThread = receiveMessagesThread(self.receiverClientObj.clientID,self.clientIns)
+        self.receiveMessagesThread.my_signal.connect(self.buildSenderMessages)
+        self.receiveMessagesThread.start()
+
+    @pyqtSlot(int, str)
+    def buildSenderMessages(self, clientID: int, message: str):
+        # add message
+        hbox1 = SenderMsg(parent=self.chatWidget, message=message)
         self.verticalLayout_2.insertLayout(len(self.verticalLayout_2)-1, hbox1)
 
+    def startChatting(self, clientID: int):
+        self.clientIns.intiateMessaging(clientID)
+        self.StartButtonEvent()
 
     def setupUi(self):
         self.setObjectName("ChatWindow")
@@ -28,23 +93,24 @@ class ChatWindow(QtWidgets.QMainWindow):
         self.verticalLayout = QtWidgets.QVBoxLayout()
         self.verticalLayout.setObjectName("verticalLayout")
 
-        self.userScroll = QtWidgets.QScrollArea()
-        self.userWidget = QtWidgets.QWidget()
+        self.chatScroll = QtWidgets.QScrollArea()
+        self.chatWidget = QtWidgets.QWidget()
 
         self.verticalLayout_2 = QtWidgets.QVBoxLayout()
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        
-        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+
+        spacerItem2 = QtWidgets.QSpacerItem(
+            20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_2.addItem(spacerItem2)
-        self.userWidget.setLayout(self.verticalLayout_2)
+        self.chatWidget.setLayout(self.verticalLayout_2)
         # Scroll Area Properties
-        self.userScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
-        self.userScroll.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.userScroll.setWidgetResizable(True)
-        self.userScroll.setWidget(self.userWidget)
-        self.verticalLayout.addWidget(self.userScroll)
-        
-        self.verticalLayout.addLayout(self.verticalLayout_2)
+        self.chatScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.chatScroll.setHorizontalScrollBarPolicy(
+            QtCore.Qt.ScrollBarAlwaysOff)
+        self.chatScroll.setWidgetResizable(True)
+        self.chatScroll.setWidget(self.chatWidget)
+        self.verticalLayout.addWidget(self.chatScroll)
+
         # component to send message
         self.chatHbox = ChatInput(self.centralwidget, self.onClick_send)
         self.verticalLayout.addLayout(self.chatHbox)
@@ -58,7 +124,8 @@ class ChatWindow(QtWidgets.QMainWindow):
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("ChatWindow", "[Username]"))
+        self.setWindowTitle(_translate(
+            "ChatWindow", self.receiverClientObj.username))
         self.chatHbox.pushButton.setText(_translate("ChatWindow", "SEND"))
 
 

@@ -40,6 +40,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.setObjectName("MainWindow")
         self.setFixedWidth(1183)
         self.setFixedHeight(855)
+        self.setWindowIcon(QtGui.QIcon('images/logo.svg'))
         self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
         self.submit_button = QtWidgets.QPushButton(self.centralwidget)
@@ -174,7 +175,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
-        self.setWindowTitle(_translate("MainWindow", "MainWindow"))
+        self.setWindowTitle(_translate("MainWindow", "Login"))
         self.submit_button.setText(_translate("MainWindow", "SUBMIT"))
         self.submit_button.clicked.connect(self.validateCredentials)
         
@@ -204,7 +205,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         # userid = "Agni"
         password = "password"
-        serverip = "192.168.43.244"
+        serverip = "192.168.29.39"
         port = 9999
         
         try:
@@ -238,7 +239,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
                     clientCredentials=credentials
                 )
                 # move to main application file
-                self.hide()
                 self.mainApp = MainWindow(self,self.clientIns)
                 self.mainApp.setupUi()
                 self.mainApp.show()

@@ -156,7 +156,8 @@ class ServerInteraction:
         bundle = data['bundle']
         message = decrypt_message(self.clientCredentials["username"], bundle=bundle)
         self.activeClients[senderID].messages.put(message)
-    
+        print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} Message Received:{message} {self.activeClients[senderID].messages.qsize()}', end='\n')
+        
     def _getClientPublicKey(self, clientID: int):
         request = {
             "type": "get_pubkey",
