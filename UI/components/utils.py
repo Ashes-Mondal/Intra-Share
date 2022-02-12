@@ -105,3 +105,13 @@ def getSizeStr(size_bytes:int):
                 return str(KB) + "KB"
         else:
             return str(MB) + "MB"
+
+def recvall(conn, n):
+    # Helper function to recv n bytes or return None if EOF is hit
+    data = bytearray()
+    while len(data) < n:
+        packet = conn.recv(n - len(data))
+        if not packet:
+            return None
+        data.extend(packet)
+    return data

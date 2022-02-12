@@ -1,6 +1,4 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from .options import Options_MainWindow
-from .userWindow import UserWindow
 from .UIComponents.MainHeading import MainHeading
 from .MainWindow import MainWindow
 
@@ -283,7 +281,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         # userid = "Agni"
         password = "password"
-        serverip = "192.168.43.244"
+        serverip = "192.168.29.39"
         port = 9999
         
         try:

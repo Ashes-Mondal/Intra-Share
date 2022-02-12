@@ -19,18 +19,14 @@ class FileSharingFunctionalities:
         self.hostedFiles = {}
         self.FileTakingclients = []
 
-    def _receiveFile(self,client,conn,pause1,file: tuple):
-        fileID, start, end, filesize, filename, download_directory,completed_bytes = file
-        print(current_thread().getName())
-        filepath = os.path.join(download_directory, filename)
-        print(
-            f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Downloading path:= {bcolors["UNDERLINE"]}{filepath}{bcolors["ENDC"]}')
-        progress = tqdm.tqdm(range(
-            filesize), f'{bcolors["OKGREEN"]}Downloading{bcolors["ENDC"]}', unit="B", unit_scale=True, unit_divisor=1024,)
+    def receiveFile(self,client,conn,pause1,file: tuple):
+        fileID, start, end, filesize, filepath,completed_bytes = file
+        print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Downloading path:= {bcolors["UNDERLINE"]}{filepath}{bcolors["ENDC"]}')
+        progress = tqdm.tqdm(range(filesize), f'{bcolors["OKGREEN"]}Downloading{bcolors["ENDC"]}', unit="B", unit_scale=True, unit_divisor=1024,)
         if fileID in client.fileTaking.keys():
             client.fileTaking[fileID][3] = pause1
         else:
-            client.fileTaking[fileID] = [start,0,False,pause1]
+            client.fileTaking[fileID] = [start,0,False,pause1,filepath]
         with open(filepath, 'wb') as output:
             output.seek(4096 * start)
             progress.update(completed_bytes)
@@ -38,10 +34,8 @@ class FileSharingFunctionalities:
                 try:
                     data = recvall(conn, min(4096, filesize - completed_bytes))
                     if not data:
-                        print(
-                            f'{bcolors["FAIL"]}[CLIENT]_receiveFile error! {bcolors["ENDC"]}')
-                        print(
-                            f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} Client went offline!')
+                        print(f'{bcolors["FAIL"]}[CLIENT]_receiveFile error! {bcolors["ENDC"]}')
+                        print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} Client went offline!')
                         break
                     output.write(data)
                     completed_bytes += len(data)
@@ -50,17 +44,19 @@ class FileSharingFunctionalities:
                     if(pause1.is_set()):
                         pause1.clear()
                         with self.filelock:
-                            client.fileTaking[fileID] = [start, completed_bytes, True, pause1]
+                            client.fileTaking[fileID] = [start, completed_bytes, True, pause1,filepath]
                         pause1.wait()
                         pause1.clear()
                         client.fileTaking[fileID][2] = False
-
                 except Exception as error:
-                    print(
-                        f'{bcolors["FAIL"]}[CLIENT]Failed to listen to {bcolors["ENDC"]}')
-                    print(
-                        f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+                    print(f'{bcolors["FAIL"]}[CLIENT]Failed to listen to {bcolors["ENDC"]}')
+                    print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
                     break
+                
+            if client.fileTaking[fileID][1] == filesize:
+                with self.filelock:
+                    del(client.fileTaking[fileID])
+                print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Download completed 😊\n>>', end='')
             # closing the connection
             conn.close()
             sys.exit()

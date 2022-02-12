@@ -181,7 +181,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             # set filelist in a dictionary
             self.filesNotPresent = []
             for file in server_response["fileList"]:
-                fileID, filename,filePath,fileSize, ID, username, status = file
+                fileID, filename, filePath, fileSize, ID, username, status = file
                 if os.path.isfile(filePath):
                     self.hostedFiles[fileID] = (filename, filePath, fileSize)
                 else:
@@ -232,8 +232,10 @@ class Client(ServerInteraction, FileSharingFunctionalities):
                 try:
                     self.deleteFile(fileID)
                 except Exception as error:
-                    print(f'{bcolors["FAIL"]}[CLIENT]Failed to remove file with ID:{fileID}{bcolors["ENDC"]}')
-                    print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+                    print(
+                        f'{bcolors["FAIL"]}[CLIENT]Failed to remove file with ID:{fileID}{bcolors["ENDC"]}')
+                    print(
+                        f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
         except Exception as error:
             print(
                 f'{bcolors["FAIL"]}[CLIENT]Failed to connect to server {self.server_addr}{bcolors["ENDC"]}')
@@ -309,8 +311,9 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             if clientID in self.activeMessagingClient.keys():
                 username = self.activeClients[clientID].username
                 self.activeMessagingClient.pop(clientID)
-                print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]} Stopping messenging with {bcolors["UNDERLINE"]}{username}{bcolors["ENDC"]}')
-                
+                print(
+                    f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]} Stopping messenging with {bcolors["UNDERLINE"]}{username}{bcolors["ENDC"]}')
+
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 
     ##!--------------- > Search methods < ---------------!##
@@ -331,8 +334,9 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             self.displayFiles.clear()
             if len(server_response["data"]):
                 for file in server_response["data"]:
-                    fileID, filename,filesize, ID, username, status = file
-                    self.displayFiles[fileID] = (filename, filesize, ID, username, status)
+                    fileID, filename, filesize, ID, username, status = file
+                    self.displayFiles[fileID] = (
+                        filename, filesize, ID, username, status)
         return self.displayFiles
 
     def searchUsers(self, search: str):
@@ -360,7 +364,14 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         else:
             return tuple(server_response["data"])
 
-    def downloadFile(self, clientID: int, fileID: int, filename: str, filesize: int, download_directory):
+    def downloadFile(self, clientID: int, fileID: int, filename: str, filesize: int, download_directory:str):
+        if (
+            fileID in self.activeClients[clientID].fileTaking.keys() and
+            self.activeClients[clientID].fileTaking[fileID][3] != None
+        ):
+            self.activeClients[clientID].fileTaking[fileID][3].set()
+            return None
+
         # manipulate chunks
         start = 0
         end = (filesize//4096) + 1 if (filesize % 4096) else 0
@@ -384,7 +395,9 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         conn.sendall(encodeJSON(request))
 
         # waiting for the response
+        conn.settimeout(3)
         response = str(conn.recv(4096), 'utf-8')
+        conn.settimeout(None)
         if len(response) == 0:
             print(
                 f'{bcolors["FAIL"]}[CLIENT]Failed to download file := "{filename}"{bcolors["ENDC"]}')
@@ -396,31 +409,25 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         if response["error"] != None:
             raise Exception(response["error"])
         pause1 = Event()
-        file = (fileID, start, end, filesize, filename,
-                download_directory, completed_bytes)
-        t1 = Thread(target=self._receiveFile, args=(
-            client, conn, pause1, file), daemon=True, name=f'_receiveFile_{filename}')
-        t2 = Thread(target=self._clientInteraction, args=(
-            conn, pause1), daemon=True, name=f'_clientInteraction_{filename}')
-        t1.start()
-        t2.start()
+        filepath = os.path.join(download_directory, filename)
+        file = (fileID, start, end, filesize, filepath, completed_bytes)
+        # t1 = Thread(target=self.receiveFile, args=(client, conn, pause1, file), daemon=True, name=f'_receiveFile_{filename}')
+        # t1.start()
+        # t2 = Thread(target=self._clientInteraction, args=(conn, pause1), daemon=True, name=f'_clientInteraction_{filename}')
+        # t2.start()
+        # t1.join()
+        parameters = (client, conn, pause1, file,self.filelock)
+        return parameters
 
-        t1.join()
-        if client.fileTaking[fileID][1] == filesize:
-            with self.filelock:
-                del(client.fileTaking[fileID])
-        conn.close()
-        print(
-            f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Download completed 😊\n>>', end='')
-        sys.exit(0)
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 
     ##!---------- > Shared files methods < ------------!##
 
-    def insertFiles(self,files: list=[]):
+    def insertFiles(self, files: list = []):
         if __name__ == "__main__":
             files = getFiles()
-        if len(files) == 0:return
+        if len(files) == 0:
+            return
         request = {"type": "insert_new_files", "data": files}
         self.clientReq_Channel.put(request)
         # Waiting for response from server
@@ -481,7 +488,8 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             if len(server_response["data"]):
                 for file in server_response["data"]:
                     fileID, filename, filepath, filesize, ID, username, status = file
-                    self.displayFiles[fileID] = (filename, filesize, ID, username, status)
+                    self.displayFiles[fileID] = (
+                        filename, filesize, ID, username, status)
         return self.displayFiles
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 

@@ -34,7 +34,7 @@ class DownloadFile(QtWidgets.QVBoxLayout):
         self.dlFileProgressHbox.setObjectName("dlFileProgressHbox")
 
         self.dlProgressBar = QtWidgets.QProgressBar(self.parent)
-        self.dlProgressBar.setProperty("value", 24)
+        self.dlProgressBar.setProperty("value", 95)
         self.dlProgressBar.setObjectName("dlProgressBar")
         self.dlFileProgressHbox.addWidget(self.dlProgressBar)
 

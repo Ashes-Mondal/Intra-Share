@@ -13,6 +13,7 @@ from UI.components.DownloadFile import DownloadFile
 from UI.components.utils import usrData, userFilesData, ext_ico_path, fileSrchData, downloadsList
 from .ChatWindow import ChatWindow
 from threading import Thread, currentThread
+from UI.components.ReceiveFileThread import ReceiveFileThread
 
 
 class BtnThread(QtCore.QThread):
@@ -131,16 +132,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.horizontalLayout_10.addWidget(self.heading2)
         self.verticalLayout_6.addLayout(self.horizontalLayout_10)
 
-        # for file in self.:
-        #     usrFile = UserFile(file, self.userFilesWidget,self.removeUserFile)
-        #     # divider
-        #     self.usrline = QtWidgets.QFrame(self.userFilesWidget)
-        #     self.usrline.setFrameShape(QtWidgets.QFrame.HLine)
-        #     self.usrline.setFrameShadow(QtWidgets.QFrame.Sunken)
-        #     self.usrline.setObjectName("usrline_" + file["fileName"])
-        #     # adding to layout
-        #     self.verticalLayout_18.addLayout(usrFile)
-        #     self.verticalLayout_18.addWidget(self.usrline)
         self.paintUserFiles()
         
         spacerItem1 = QtWidgets.QSpacerItem(
@@ -230,17 +221,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.line_9.setFrameShadow(QtWidgets.QFrame.Sunken)
         self.line_9.setObjectName("line_9")
         self.verticalLayout_13.addWidget(self.line_9)
-
-        # for file in fileSrchData:
-        #     fileLayout = File(file, self.fileSearchWidget)
-        #     # divider
-        #     self.line_7 = QtWidgets.QFrame(self.fileSearchWidget)
-        #     self.line_7.setFrameShape(QtWidgets.QFrame.HLine)
-        #     self.line_7.setFrameShadow(QtWidgets.QFrame.Sunken)
-        #     self.line_7.setObjectName("line_7")
-        #     self.verticalLayout_13.addLayout(fileLayout)
-        #     self.verticalLayout_13.addWidget(self.line_7)
-
         spacerItem2 = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_13.addItem(spacerItem2)
@@ -465,6 +445,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.paintDisplayFiles()
 
     def getFileListOfClient(self,clientID: int):
+        self.clientIns.getFileListOfClient(clientID)
         self.paintDisplayFiles()
     
     def paintDisplayFiles(self):
