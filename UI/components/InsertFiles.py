@@ -8,7 +8,7 @@ class InsertFiles(QtWidgets.QHBoxLayout):
         self.setObjectName("Insert" + "_Hbox")
         _translate = QtCore.QCoreApplication.translate
 
-        text = "Insert files  "
+        text = "Share files  "
         self.insertFilesBtn = QtWidgets.QPushButton(parent=self.parent)
         self.insertFilesBtn.setCursor(
             QtGui.QCursor(QtCore.Qt.PointingHandCursor))

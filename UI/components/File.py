@@ -65,7 +65,7 @@ class File(QtWidgets.QHBoxLayout):
         )
         self.fileSize.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.fileSize.setObjectName("fileSize" + str(fileID))
-        self.fileSize.setText(_translate("MainWindow", filesize))
+        self.fileSize.setText(_translate("MainWindow", str(int(fileSize)//1048576) + "MB"))
 
 		#dwnloadBtn
         self.dwnloadBtn = QtWidgets.QPushButton(self.parent)

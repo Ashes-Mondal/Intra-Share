@@ -37,6 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.clientIns = clientIns
         self.searchMode = True
         self.fileLayoutLst = []
+        self.userFiles = {}
         self.setObjectName("MainWindow")
         self.resize(1181, 846)
         self.setWindowIcon(QtGui.QIcon('images/logo.svg'))
@@ -129,16 +130,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.horizontalLayout_10.addWidget(self.heading2)
         self.verticalLayout_6.addLayout(self.horizontalLayout_10)
 
-        for file in userFilesData:
-            usrFile = UserFile(file, self.userFilesWidget)
-            # divider
-            self.usrline = QtWidgets.QFrame(self.userFilesWidget)
-            self.usrline.setFrameShape(QtWidgets.QFrame.HLine)
-            self.usrline.setFrameShadow(QtWidgets.QFrame.Sunken)
-            self.usrline.setObjectName("usrline_" + file["fileName"])
-            # adding to layout
-            self.verticalLayout_18.addLayout(usrFile)
-            self.verticalLayout_18.addWidget(self.usrline)
+        # for file in self.:
+        #     usrFile = UserFile(file, self.userFilesWidget,self.removeUserFile)
+        #     # divider
+        #     self.usrline = QtWidgets.QFrame(self.userFilesWidget)
+        #     self.usrline.setFrameShape(QtWidgets.QFrame.HLine)
+        #     self.usrline.setFrameShadow(QtWidgets.QFrame.Sunken)
+        #     self.usrline.setObjectName("usrline_" + file["fileName"])
+        #     # adding to layout
+        #     self.verticalLayout_18.addLayout(usrFile)
+        #     self.verticalLayout_18.addWidget(self.usrline)
+        self.paintUserFiles()
+        
         spacerItem1 = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_18.addItem(spacerItem1)
@@ -147,7 +150,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.userFilesScroll.setVerticalScrollBarPolicy(
             QtCore.Qt.ScrollBarAsNeeded)
         self.userFilesScroll.setHorizontalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOff)
+            QtCore.Qt.ScrollBarAsNeeded)
         self.userFilesScroll.setWidgetResizable(True)
         self.userFilesScroll.setWidget(self.userFilesWidget)
         self.verticalLayout_6.addWidget(self.userFilesScroll)
@@ -331,7 +334,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(_translate("MainWindow", title))
         self.heading1.setText(_translate("MainWindow", "CURRENT ONLINE USERS"))
         self.usrSearchLayout.lineEdit_2.setPlaceholderText(
-            _translate("MainWindow", "Search Files"))
+            _translate("MainWindow", "Search Users"))
         self.usrSearchLayout.pushButton_2.setText(
             _translate("MainWindow", "Search"))
 
@@ -346,7 +349,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.label_18.setText(_translate("MainWindow", "Type"))
         self.label_17.setText(_translate("MainWindow", "FileName"))
         self.label_16.setText(_translate("MainWindow", "Owner"))
-        self.label_15.setText(_translate("MainWindow", "Size(Bytes)"))
+        self.label_15.setText(_translate("MainWindow", "Size(MB)"))
 
         self.heading3.setText(_translate("MainWindow", "DOWNLOADS"))
 
@@ -484,7 +487,51 @@ class MainWindow(QtWidgets.QMainWindow):
             self.verticalLayout_13.insertWidget(len(self.verticalLayout_13)-1, line_7)
             self.fileLayoutLst.append((fileLayout,line_7))
 
-    
+    def paintUserFiles(self):
+        ##deleting userFile layout from userFiles dict
+        for fileID,filelayout in self.userFiles.items():
+            fileLayout[0].removeWidget(fileLayout[0].fileTypeBtn)
+            fileLayout[0].removeWidget(fileLayout[0].fileName)
+            fileLayout[0].removeWidget(fileLayout[0].fileSize)
+            fileLayout[0].removeWidget(fileLayout[0].deleteBtn)
+            
+            self.verticalLayout_18.removeWidget(fileLayout[1])
+            self.verticalLayout_18.removeItem(fileLayout[0])
+        self.userFiles.clear()
+        
+        ##painting userFiles
+        for fileID,file in self.clientIns.hostedFiles.items():
+            print(fileID)
+            fileLayout = UserFile(file,fileID, self.userFilesWidget,self.removeUserFile)
+            # divider
+            line_7 = QtWidgets.QFrame(self.userFilesWidget)
+            line_7.setFrameShape(QtWidgets.QFrame.HLine)
+            line_7.setFrameShadow(QtWidgets.QFrame.Sunken)
+            line_7.setObjectName("divider" + str(fileID))
+            self.verticalLayout_18.insertLayout(len(self.verticalLayout_18)-1, fileLayout)
+            self.verticalLayout_18.insertWidget(len(self.verticalLayout_18)-1, line_7)
+            self.userFiles[fileID] = (fileLayout,line_7)
+
+    def removeUserFilePaint(self,fileID:int):
+        fileLayout = self.userFiles[fileID]
+
+        fileLayout[0].removeWidget(fileLayout[0].fileTypeBtn)
+        fileLayout[0].removeWidget(fileLayout[0].fileName)
+        fileLayout[0].removeWidget(fileLayout[0].fileSize)
+        fileLayout[0].removeWidget(fileLayout[0].deleteBtn)
+        
+        self.verticalLayout_18.removeWidget(fileLayout[1])
+        self.verticalLayout_18.removeItem(fileLayout[0])
+
+        self.userFiles.pop(fileID)
+
+    def removeUserFile(self,fileID:int):
+        try:
+            self.clientIns.deleteFile(fileID)
+            self.removeUserFilePaint(fileID)
+        except Exception as err:
+            print("Failed to remove the file ",err)
+
 
 if __name__ == "__main__":
     import sys
