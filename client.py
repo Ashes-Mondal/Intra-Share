@@ -181,11 +181,10 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             # set filelist in a dictionary
             self.filesNotPresent = []
             for file in server_response["fileList"]:
-                fileID, filename,fileSize,filePath, ID, username, status = file
+                fileID, filename,filePath,fileSize, ID, username, status = file
                 if os.path.isfile(filePath):
                     self.hostedFiles[fileID] = (filename, filePath, fileSize)
                 else:
-                    print(filePath)
                     self.filesNotPresent.append(fileID)
 
             self.clientID = server_response["clientID"]
@@ -332,9 +331,8 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             self.displayFiles.clear()
             if len(server_response["data"]):
                 for file in server_response["data"]:
-                    fileID, filename, filesize, ID, username, status = file
-                    self.displayFiles[fileID] = (
-                        filename, filesize, ID, username, status)
+                    fileID, filename,filesize, ID, username, status = file
+                    self.displayFiles[fileID] = (filename, filesize, ID, username, status)
         return self.displayFiles
 
     def searchUsers(self, search: str):
@@ -483,8 +481,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             if len(server_response["data"]):
                 for file in server_response["data"]:
                     fileID, filename, filepath, filesize, ID, username, status = file
-                    self.displayFiles[fileID] = (
-                        filename, filesize, ID, username, status)
+                    self.displayFiles[fileID] = (filename, filesize, ID, username, status)
         return self.displayFiles
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 

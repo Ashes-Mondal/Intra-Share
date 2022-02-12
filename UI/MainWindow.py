@@ -339,7 +339,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.usrSearchLayout.pushButton_2.setText(
             _translate("MainWindow", "Search"))
 
-        self.heading2.setText(_translate("MainWindow", "YOUR FILES"))
+        self.heading2.setText(_translate("MainWindow", "SHARED FILES"))
         self.InsertFilesLayout.insertFilesBtn.clicked.connect(self.openFile)
 
         self.fileSearchLayout.lineEdit_2.setPlaceholderText(
@@ -350,7 +350,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.label_18.setText(_translate("MainWindow", "Type"))
         self.label_17.setText(_translate("MainWindow", "FileName"))
         self.label_16.setText(_translate("MainWindow", "Owner"))
-        self.label_15.setText(_translate("MainWindow", "Size(MB)"))
+        self.label_15.setText(_translate("MainWindow", "Size     "))
 
         self.heading3.setText(_translate("MainWindow", "DOWNLOADS"))
 
@@ -381,12 +381,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def createBtns(self):
         try:
-            # print("\np0:")
-            # print(self.allUsers)
-            # delete existing widgets and layouts
             self.deleteUserProps()
 
-            # time.sleep(0.05)
             for clientID, clientOBJ in self.clientIns.activeClients.items():
                 if clientOBJ.online:
                     usr = User(clientOBJ, self.userWidget, self.msgCurrentUser,self.getFileListOfClient)
@@ -469,7 +465,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.paintDisplayFiles()
 
     def getFileListOfClient(self,clientID: int):
-        print("got files: ",self.clientIns.getFileListOfClient(clientID))
         self.paintDisplayFiles()
     
     def paintDisplayFiles(self):
@@ -488,7 +483,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         ##painting displayFiles
         for fileID,file in self.clientIns.displayFiles.items():
-            fileLayout = File(file, self.fileSearchWidget)
+            fileLayout = File(fileID,file, self.fileSearchWidget)
             # divider
             line_7 = QtWidgets.QFrame(self.fileSearchWidget)
             line_7.setFrameShape(QtWidgets.QFrame.HLine)
@@ -512,7 +507,6 @@ class MainWindow(QtWidgets.QMainWindow):
         
         ##painting userFiles
         for fileID,file in self.clientIns.hostedFiles.items():
-            print(fileID)
             fileLayout = UserFile(file,fileID, self.userFilesWidget,self.removeUserFile)
             # divider
             line_7 = QtWidgets.QFrame(self.userFilesWidget)
