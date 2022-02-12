@@ -3,8 +3,9 @@ from .utils import ext_ico_path,getSizeStr
 
 
 class File(QtWidgets.QHBoxLayout):
-    def __init__(self,fileID:int, file: dict, parent):
+    def __init__(self,fileID:int, file: dict, parent, downloadsList):
         super(File, self).__init__()
+        self.downloadsList = downloadsList
         self.fileID = fileID
         self.file = file#(filename, fileSize, fileID, username, status = file)
         filename, fileSize, userID, username, status = file
@@ -87,6 +88,7 @@ class File(QtWidgets.QHBoxLayout):
         self.dwnloadBtn.setObjectName("dwnloadBtn_" + str(fileID))
         self.dwnloadBtn.setIcon(QtGui.QIcon('images/download.png'))
         self.dwnloadBtn.setIconSize(QtCore.QSize(32, 32))
+        self.dwnloadBtn.clicked.connect(self.startDownload)
         if status == False:
             self.dwnloadBtn.setEnabled(False)
 
@@ -102,3 +104,6 @@ class File(QtWidgets.QHBoxLayout):
         self.setStretch(2, 4)
         self.setStretch(3, 4)
         self.setStretch(4, 1)
+    
+    def startDownload(self):
+        self.downloadsList(self.fileID, self.file)

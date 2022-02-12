@@ -1,3 +1,4 @@
+import sys
 from PyQt5 import QtCore, QtGui, QtWidgets
 from colors import bcolors
 from .utils import recvall
@@ -11,8 +12,8 @@ class ReceiveFileThread(QtCore.QThread):
         self.file = file
         self.filelock = filelock
         self.pauseEvent = pause1
-        self.clientObj = client
-        
+        self.clientObj = clientObj
+
     def run(self):
         fileID, start, end, filesize, filepath,completed_bytes = self.file
         print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]}Downloading path:= {bcolors["UNDERLINE"]}{filepath}{bcolors["ENDC"]}')
@@ -22,7 +23,7 @@ class ReceiveFileThread(QtCore.QThread):
             self.clientObj.fileTaking[fileID] = [start,0,False,self.pauseEvent,filepath]
         with open(filepath, 'wb') as output:
             output.seek(4096 * start)
-            progress.emit(round((completed_bytes/filesize)*100))
+            self.progress.emit(round((completed_bytes/filesize)*100))
             while start < end:
                 try:
                     data = recvall(self.conn, min(4096, filesize - completed_bytes))
@@ -32,7 +33,7 @@ class ReceiveFileThread(QtCore.QThread):
                         break
                     output.write(data)
                     completed_bytes += len(data)
-                    progress.emit(round((completed_bytes/filesize)*100))
+                    self.progress.emit(round((completed_bytes/filesize)*100))
                     start += 1
                     if(self.pauseEvent.is_set()):
                         self.pauseEvent.clear()

@@ -1,6 +1,7 @@
 import time
 import os
 from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSlot
 from UI.components.Heading import Heading
 from UI.components.User import User
 from UI.components.UserFile import UserFile
@@ -262,16 +263,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.verticalLayout_16.addWidget(self.heading3)
         self.verticalLayout_8.addLayout(self.verticalLayout_16)
 
-        for details in downloadsList:
-            dlFileVbox = DownloadFile(details, self.dlFileSearchWidget)
-            self.verticalLayout_15.addLayout(dlFileVbox)
-            # divider
-            self.line_10 = QtWidgets.QFrame(self.dlFileSearchWidget)
-            self.line_10.setFrameShape(QtWidgets.QFrame.HLine)
-            self.line_10.setFrameShadow(QtWidgets.QFrame.Sunken)
-            self.line_10.setObjectName("line_10")
-            self.verticalLayout_15.addWidget(self.line_10)
-
         spacerItem3 = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.verticalLayout_15.addItem(spacerItem3)
@@ -464,7 +455,7 @@ class MainWindow(QtWidgets.QMainWindow):
         
         ##painting displayFiles
         for fileID,file in self.clientIns.displayFiles.items():
-            fileLayout = File(fileID,file, self.fileSearchWidget)
+            fileLayout = File(fileID,file, self.fileSearchWidget, self.downloadsList)
             # divider
             line_7 = QtWidgets.QFrame(self.fileSearchWidget)
             line_7.setFrameShape(QtWidgets.QFrame.HLine)
@@ -517,3 +508,40 @@ class MainWindow(QtWidgets.QMainWindow):
             self.removeUserFilePaint(fileID)
         except Exception as err:
             print("Failed to remove the file ",err)
+    
+    # show downloading files option
+    def downloadsList(self, fileID, file):
+        print("fid: ", fileID)
+        print("file: ", file)
+        fileName, fileSize, userID, username, status = file
+
+        options = QtWidgets.QFileDialog.Options()
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
+        fileDir = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
+        print(fileDir)
+
+        try:
+            parameters = self.clientIns.downloadFile(userID, fileID, fileName, fileSize, fileDir)
+            self.dwnloadThread = ReceiveFileThread(parameters)
+            # self.dwnloadThread.finished.connect(self.thread_finished)
+            self.dwnloadThread.progress.connect(self.downloadFile)
+            self.dwnloadThread.start()
+
+            if fileID in self.clientIns.activeClients[userID].fileTaking.keys():
+                self.clientIns.downloadFile(userID, fileID, fileName, fileSize, fileDir)
+            # d = []
+            # dlFileVbox = DownloadFile(details, self.dlFileSearchWidget)
+            # self.verticalLayout_15.addLayout(dlFileVbox)
+            # # divider
+            # self.line_10 = QtWidgets.QFrame(self.dlFileSearchWidget)
+            # self.line_10.setFrameShape(QtWidgets.QFrame.HLine)
+            # self.line_10.setFrameShadow(QtWidgets.QFrame.Sunken)
+            # self.line_10.setObjectName("line_10")
+            # self.verticalLayout_15.addWidget(self.line_10)
+        except Exception as err:
+            print("download err: ", err)
+
+    @pyqtSlot(int)
+    def downloadFile(self, progress: int):
+        print(progress)
+        pass
