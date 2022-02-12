@@ -482,7 +482,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             self.displayFiles.clear()
             if len(server_response["data"]):
                 for file in server_response["data"]:
-                    fileID, filename, filesize, filepath, ID, username, status = file
+                    fileID, filename, filepath, filesize, ID, username, status = file
                     self.displayFiles[fileID] = (
                         filename, filesize, ID, username, status)
         return self.displayFiles

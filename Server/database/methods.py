@@ -155,7 +155,7 @@ class Database_Methods:
             curr = self.dbConn.cursor()
             fileIDs = []
             for file in files:
-                filename, filesize, path = file
+                filename, path, filesize = file
                 try:
                     curr.execute(
                         operation, (filename, filesize, path, clientID))

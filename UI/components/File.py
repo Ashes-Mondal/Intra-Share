@@ -5,8 +5,8 @@ from .utils import ext_ico_path
 class File(QtWidgets.QHBoxLayout):
     def __init__(self, file: dict, parent):
         super(File, self).__init__()
-        self.file = file#(filename, filesize, fileID, username, status = file)
-        filename, filesize, fileID, username, status = file
+        self.file = file#(filename, fileSize, fileID, username, status = file)
+        filename, fileSize, fileID, username, status = file
         self.type = filename.split('.')[-1].upper()
         self.parent = parent
         self.setObjectName("_Hbox" + str(fileID))

@@ -1,4 +1,5 @@
 import time
+import os
 from PyQt5 import QtCore, QtGui, QtWidgets
 from UI.components.Heading import Heading
 from UI.components.User import User
@@ -415,9 +416,19 @@ class MainWindow(QtWidgets.QMainWindow):
     def openFile(self):   
         options = QtWidgets.QFileDialog.Options()
         options |= QtWidgets.QFileDialog.DontUseNativeDialog
-        filePath, _ = QtWidgets.QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileName()", "","All Files ();;Python Files (.py)", options=options)
-        if filePath:
-            print(filePath)
+        filePathList, _ = QtWidgets.QFileDialog.getOpenFileNames(self,"Select Files", "","All Files ();;Python Files (.py)", options=options)
+        if filePathList:
+            try:
+                files = []
+                print(filePathList)
+                for filepath in filePathList:
+                    filename = filepath.split("/")[-1]
+                    filesize = os.path.getsize(filepath)
+                    files.append((filename,filepath,filesize))
+                self.clientIns.insertFiles(files)
+                self.paintUserFiles()
+            except Exception as err:
+                print("File Insertion Error: ", err)
 
     def thread_finished(self):
         print("finished\n")
@@ -458,7 +469,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.paintDisplayFiles()
 
     def getFileListOfClient(self,clientID: int):
-        self.clientIns.getFileListOfClient(clientID)
+        print("got files: ",self.clientIns.getFileListOfClient(clientID))
         self.paintDisplayFiles()
     
     def paintDisplayFiles(self):
@@ -489,7 +500,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def paintUserFiles(self):
         ##deleting userFile layout from userFiles dict
-        for fileID,filelayout in self.userFiles.items():
+        for fileID,fileLayout in self.userFiles.items():
             fileLayout[0].removeWidget(fileLayout[0].fileTypeBtn)
             fileLayout[0].removeWidget(fileLayout[0].fileName)
             fileLayout[0].removeWidget(fileLayout[0].fileSize)
@@ -531,12 +542,3 @@ class MainWindow(QtWidgets.QMainWindow):
             self.removeUserFilePaint(fileID)
         except Exception as err:
             print("Failed to remove the file ",err)
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    ui = MainWindow()
-    ui.setupUi()
-    ui.show()
-    sys.exit(app.exec_())
