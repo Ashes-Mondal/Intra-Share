@@ -38,138 +38,218 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     
     def startUI(self):
         self.setObjectName("MainWindow")
-        self.setFixedWidth(1183)
-        self.setFixedHeight(855)
+        self.setFixedSize(948, 826)
         self.setWindowIcon(QtGui.QIcon('images/logo.svg'))
         self.centralwidget = QtWidgets.QWidget(self)
         self.centralwidget.setObjectName("centralwidget")
-        self.submit_button = QtWidgets.QPushButton(self.centralwidget)
-        self.submit_button.setGeometry(QtCore.QRect(430, 470, 371, 32))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(12)
-        self.submit_button.setFont(font)
-        self.submit_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.submit_button.setLayoutDirection(QtCore.Qt.LeftToRight)
-        self.submit_button.setStyleSheet("QPushButton{    \n"
-"    background-color: qlineargradient(spread:pad, x1:0, y1:0.505682, x2:1, y2:0.477, stop:0 rgba(20, 47, 78, 219), stop:1 rgba(85, 98, 112, 226));\n"
-"    color:rgba(255, 255, 255, 210);\n"
-"    border-radius:5px;\n"
-"}\n"
-"QPushButton::hover{    \n"
-"    background-color: qlineargradient(spread:pad, x1:0, y1:0.505682, x2:1, y2:0.477, stop:0 rgba(40, 67, 98, 219), stop:1 rgba(105, 118, 132, 226));\n"
-"}\n"
-"QPushButton::pressed{    \n"
-"    padding-left:5px;\n"
-"    padding-top:5px;\n"
-"    background-color:rgba(105, 118, 132, 200);\n"
-"}")
-        self.submit_button.setObjectName("submit_button")
-        self.password_input = QtWidgets.QLineEdit(self.centralwidget)
-        self.password_input.setGeometry(QtCore.QRect(430, 220, 371, 41))
-        self.password_input.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
-        "border:none;\n"
-        "border-left:2px dashed rgba(105, 118, 132, 255);\n"
-        "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
-        "padding:10px;")
-        self.password_input.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.password_input.setObjectName("password_input")
-        self.label_ip = QtWidgets.QLabel(self.centralwidget)
-        self.label_ip.setGeometry(QtCore.QRect(310, 280, 111, 41))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(14)
-        self.label_ip.setFont(font)
-        self.label_ip.setObjectName("label_ip")
-        self.ip_input = QtWidgets.QLineEdit(self.centralwidget)
-        self.ip_input.setGeometry(QtCore.QRect(430, 280, 371, 41))
-        self.ip_input.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
-        "border:none;\n"
-        "border-left:2px dashed rgba(105, 118, 132, 255);\n"
-        "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
-        "padding:10px;")
-        self.ip_input.setEchoMode(QtWidgets.QLineEdit.Normal)
-        self.ip_input.setObjectName("ip_input")
-        self.label_password = QtWidgets.QLabel(self.centralwidget)
-        self.label_password.setGeometry(QtCore.QRect(300, 220, 121, 41))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(14)
-        self.label_password.setFont(font)
-        self.label_password.setObjectName("label_password")
 
-        self.label_heading = MainHeading(self.centralwidget)
-
+        self.horizontalLayout = QtWidgets.QHBoxLayout(self.centralwidget)
+        self.horizontalLayout.setObjectName("horizontalLayout")
+        self.verticalLayout = QtWidgets.QVBoxLayout()
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.horizontallLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontallLayout_2.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
+        self.horizontallLayout_2.setContentsMargins(10, -1, 10, -1)
+        self.horizontallLayout_2.setObjectName("horizontallLayout_2")
+        spacerItem = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontallLayout_2.addItem(spacerItem)
+        self.label_heading = QtWidgets.QLabel(self.centralwidget)
+        self.label_heading.setLayoutDirection(QtCore.Qt.LeftToRight)
+        self.label_heading.setStyleSheet("border: 2px solid red;\n"
+        "font: 75 17pt \"MS Sans Serif\";\n"
+        "border-radius: 10px;\n"
+        "padding-left: 10;\n"
+        "padding-right: 10;\n"
+        "margin: 20px 0px;\n"
+        "color: rgb(85, 255, 255);\n"
+        "background-color: rgb(85, 0, 127);")
+        self.label_heading.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_heading.setWordWrap(False)
+        self.label_heading.setObjectName("label_heading")
+        self.horizontallLayout_2.addWidget(self.label_heading)
+        spacerItem1 = QtWidgets.QSpacerItem(40, 20, QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Minimum)
+        self.horizontallLayout_2.addItem(spacerItem1)
+        self.horizontallLayout_2.setStretch(0, 1)
+        self.horizontallLayout_2.setStretch(1, 2)
+        self.horizontallLayout_2.setStretch(2, 1)
+        self.verticalLayout.addLayout(self.horizontallLayout_2)
+        self.verticalLayout_3 = QtWidgets.QVBoxLayout()
+        self.verticalLayout_3.setSizeConstraint(QtWidgets.QLayout.SetMinimumSize)
+        self.verticalLayout_3.setContentsMargins(-1, 30, -1, -1)
+        self.verticalLayout_3.setObjectName("verticalLayout_3")
+        self.horizontalLayout_8 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_8.setContentsMargins(-1, -1, -1, 10)
+        self.horizontalLayout_8.setObjectName("horizontalLayout_8")
         self.label_uid = QtWidgets.QLabel(self.centralwidget)
-        self.label_uid.setGeometry(QtCore.QRect(330, 160, 91, 41))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(14)
-        self.label_uid.setFont(font)
+        self.label_uid.setStyleSheet("padding: 10px;\n"
+        "padding-right: 0px;\n"
+        "font: 14pt \"Sylfaen\";\n"
+        "color: rgb(85, 0, 127);")
+        self.label_uid.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
         self.label_uid.setObjectName("label_uid")
+        self.horizontalLayout_8.addWidget(self.label_uid)
         self.uid_input = QtWidgets.QLineEdit(self.centralwidget)
-        self.uid_input.setGeometry(QtCore.QRect(430, 160, 371, 41))
         self.uid_input.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
         "border:none;\n"
         "border-left:2px dashed rgba(105, 118, 132, 255);\n"
         "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
-        "padding:10px;")
-        self.uid_input.setEchoMode(QtWidgets.QLineEdit.Normal)
+        "padding:10px;\n"
+        "margin-right: 70px;\n"
+        "font: 12pt \"Sylfaen\";")
         self.uid_input.setObjectName("uid_input")
+        self.horizontalLayout_8.addWidget(self.uid_input)
+        self.horizontalLayout_8.setStretch(0, 4)
+        self.horizontalLayout_8.setStretch(1, 10)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_8)
+        self.horizontalLayout_7 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_7.setContentsMargins(-1, -1, -1, 10)
+        self.horizontalLayout_7.setObjectName("horizontalLayout_7")
+        self.label_password = QtWidgets.QLabel(self.centralwidget)
+        self.label_password.setStyleSheet("padding: 10px;\n"
+        "padding-right: 0px;\n"
+        "font: 14pt \"Sylfaen\";\n"
+        "color: rgb(85, 0, 127);")
+        self.label_password.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.label_password.setObjectName("label_password")
+        self.horizontalLayout_7.addWidget(self.label_password)
+        self.password_input = QtWidgets.QLineEdit(self.centralwidget)
+        self.password_input.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
+        "border:none;\n"
+        "border-left:2px dashed rgba(105, 118, 132, 255);\n"
+        "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
+        "padding:10px;\n"
+        "margin-right: 70px;\n"
+        "font: 12pt \"Sylfaen\";")
+        self.password_input.setObjectName("password_input")
+        self.password_input.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.horizontalLayout_7.addWidget(self.password_input)
+        self.horizontalLayout_7.setStretch(0, 4)
+        self.horizontalLayout_7.setStretch(1, 10)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_7)
+        self.horizontalLayout_6 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_6.setContentsMargins(-1, -1, -1, 10)
+        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
+        self.label_ip = QtWidgets.QLabel(self.centralwidget)
+        self.label_ip.setStyleSheet("padding: 10px;\n"
+        "padding-right: 0px;\n"
+        "font: 14pt \"Sylfaen\";\n"
+        "color: rgb(85, 0, 127);")
+        self.label_ip.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.label_ip.setObjectName("label_ip")
+        self.horizontalLayout_6.addWidget(self.label_ip)
+        self.ip_input = QtWidgets.QLineEdit(self.centralwidget)
+        self.ip_input.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
+        "border:none;\n"
+        "border-left:2px dashed rgba(105, 118, 132, 255);\n"
+        "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
+        "padding:10px;\n"
+        "margin-right: 70px;\n"
+        "font: 12pt \"Sylfaen\";")
+        self.ip_input.setObjectName("ip_input")
+        self.horizontalLayout_6.addWidget(self.ip_input)
+        self.horizontalLayout_6.setStretch(0, 4)
+        self.horizontalLayout_6.setStretch(1, 10)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_6)
+        self.horizontalLayout_4 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_4.setContentsMargins(-1, -1, -1, 10)
+        self.horizontalLayout_4.setObjectName("horizontalLayout_4")
+        self.label_port = QtWidgets.QLabel(self.centralwidget)
+        self.label_port.setStyleSheet("padding: 10px;\n"
+        "padding-right: 0px;\n"
+        "font: 14pt \"Sylfaen\";\n"
+        "color: rgb(85, 0, 127);")
+        self.label_port.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.label_port.setObjectName("label_port")
+        self.horizontalLayout_4.addWidget(self.label_port)
         self.port_input = QtWidgets.QLineEdit(self.centralwidget)
-        self.port_input.setGeometry(QtCore.QRect(430, 340, 371, 41))
         self.port_input.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
         "border:none;\n"
         "border-left:2px dashed rgba(105, 118, 132, 255);\n"
         "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
-        "padding:10px;")
-        self.port_input.setEchoMode(QtWidgets.QLineEdit.Normal)
+        "padding:10px;\n"
+        "margin-right: 70px;\n"
+        "font: 12pt \"Sylfaen\";")
+        self.port_input.setText("")
         self.port_input.setObjectName("port_input")
-        self.label_port = QtWidgets.QLabel(self.centralwidget)
-        self.label_port.setGeometry(QtCore.QRect(360, 340, 61, 31))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(14)
-        self.label_port.setFont(font)
-        self.label_port.setObjectName("label_port")
-        self.label_error = QtWidgets.QLabel(self.centralwidget)
-        self.label_error.setGeometry(QtCore.QRect(300, 110, 61, 21))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(10)
-        font.setBold(True)
-        font.setWeight(75)
-        self.label_error.setFont(font)
-        self.label_error.setStyleSheet("QLabel {\n"
-        "    color: rgb(255, 0, 0)\n"
-        "}")
-        self.label_error.setText("")
-        self.label_error.setObjectName("label_error")
+        self.horizontalLayout_4.addWidget(self.port_input)
+        self.horizontalLayout_4.setStretch(0, 4)
+        self.horizontalLayout_4.setStretch(1, 10)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_4)
+        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_2.setContentsMargins(-1, -1, -1, 10)
+        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
+        self.label_password_2 = QtWidgets.QLabel(self.centralwidget)
+        self.label_password_2.setStyleSheet("padding: 10px;\n"
+        "padding-right: 0px;\n"
+        "font: 14pt \"Sylfaen\";\n"
+        "color: rgb(85, 0, 127);")
+        self.label_password_2.setAlignment(QtCore.Qt.AlignRight|QtCore.Qt.AlignTrailing|QtCore.Qt.AlignVCenter)
+        self.label_password_2.setObjectName("label_password_2")
+        self.horizontalLayout_2.addWidget(self.label_password_2)
         self.password_input_2 = QtWidgets.QLineEdit(self.centralwidget)
-        self.password_input_2.setGeometry(QtCore.QRect(430, 400, 371, 41))
         self.password_input_2.setStyleSheet("background-color:rgba(0, 0, 0, 0);\n"
         "border:none;\n"
         "border-left:2px dashed rgba(105, 118, 132, 255);\n"
         "border-bottom:2px solid rgba(105, 118, 132, 255);\n"
-        "padding:10px;")
-        self.password_input_2.setEchoMode(QtWidgets.QLineEdit.Password)
+        "padding:10px;\n"
+        "margin-right: 70px;\n"
+        "font: 12pt \"Sylfaen\";")
         self.password_input_2.setObjectName("password_input_2")
-        self.label_password_2 = QtWidgets.QLabel(self.centralwidget)
-        self.label_password_2.setGeometry(QtCore.QRect(230, 400, 191, 41))
-        font = QtGui.QFont()
-        font.setFamily("MS Sans Serif")
-        font.setPointSize(14)
-        self.label_password_2.setFont(font)
-        self.label_password_2.setObjectName("label_password_2")
-        self.setCentralWidget(self.centralwidget)
-        self.menubar = QtWidgets.QMenuBar(self)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 1183, 26))
-        self.menubar.setObjectName("menubar")
-        self.setMenuBar(self.menubar)
-        self.statusbar = QtWidgets.QStatusBar(self)
-        self.statusbar.setObjectName("statusbar")
-        self.setStatusBar(self.statusbar)
+        self.password_input_2.setEchoMode(QtWidgets.QLineEdit.Password)
+        self.horizontalLayout_2.addWidget(self.password_input_2)
+        self.horizontalLayout_2.setStretch(0, 4)
+        self.horizontalLayout_2.setStretch(1, 10)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_2)
+        self.horizontalLayout_3 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_3.setContentsMargins(0, 0, 0, -1)
+        self.horizontalLayout_3.setObjectName("horizontalLayout_3")
+        self.label_null = QtWidgets.QLabel(self.centralwidget)
+        self.label_null.setText("")
+        self.label_null.setObjectName("label_null")
+        self.horizontalLayout_3.addWidget(self.label_null)
+        self.submit_button = QtWidgets.QPushButton(self.centralwidget)
+        self.submit_button.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.submit_button.setStyleSheet("QPushButton {\n"
+        "background-color: qlineargradient(spread:pad, x1:0, y1:0.505682, x2:1, y2:0.477, stop:0 rgba(20, 47, 78, 219), stop:1 rgba(85, 98, 112, 226));\n"
+        "color:rgba(255, 255, 255, 210);\n"
+        "border-radius:5px;\n"
+        "padding: 10px;\n"
+        "margin: 20px 70px 0 0;\n"
+        "font: 14pt \"Sylfaen\";\n"
+        "font-size: 22px\n"
+        "}\n"
+        "QPushButton::hover{\n"
+        "background-color: qlineargradient(spread:pad, x1:0, y1:0.505682, x2:1, y2:0.477, stop:0 rgba(40, 67, 98, 219), stop:1 rgba(105, 118, 132, 226));\n"
+        "}\n"
+        "QPushButton::pressed {\n"
+        "padding-left:5px;\n"
+        "padding-top:5px;\n"
+        "background-color:rgba(105, 118, 132, 200);\n"
+        "}")
+        self.submit_button.setObjectName("submit_button")
+        self.horizontalLayout_3.addWidget(self.submit_button)
+        self.horizontalLayout_3.setStretch(0, 4)
+        self.horizontalLayout_3.setStretch(1, 10)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_3)
+        self.horizontalLayout_5 = QtWidgets.QHBoxLayout()
+        self.horizontalLayout_5.setObjectName("horizontalLayout_5")
+        self.label_error = QtWidgets.QLabel(self.centralwidget)
+        self.label_error.setStyleSheet("color: red;\n"
+        "margin-top: 15px;\n"
+        "font: 75 10pt \"Myanmar Text\";")
+        self.label_error.setAlignment(QtCore.Qt.AlignCenter)
+        self.label_error.setWordWrap(True)
+        self.label_error.setObjectName("label_error")
+        self.horizontalLayout_5.addWidget(self.label_error)
+        self.verticalLayout_3.addLayout(self.horizontalLayout_5)
+        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_3.addItem(spacerItem2)
+        self.verticalLayout.addLayout(self.verticalLayout_3)
+        self.verticalLayout.setStretch(0, 2)
+        self.verticalLayout.setStretch(1, 12)
+        self.horizontalLayout.addLayout(self.verticalLayout)
 
+        self.setCentralWidget(self.centralwidget)
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -179,20 +259,18 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.submit_button.setText(_translate("MainWindow", "SUBMIT"))
         self.submit_button.clicked.connect(self.validateCredentials)
         
-        self.label_uid.setText(_translate("MainWindow", "UserID*"))
-        self.uid_input.setPlaceholderText(_translate("MainWindow", "Enter User ID"))
-        
-        self.label_password.setText(_translate("MainWindow", "Password*"))
-        self.password_input.setPlaceholderText(_translate("MainWindow", "Enter Password"))
-        
-        self.label_ip.setText(_translate("MainWindow", "Server IP*"))
-        self.ip_input.setPlaceholderText(_translate("MainWindow", "Server IP"))
-        
-        self.label_port.setText(_translate("MainWindow", "Port*"))
-        self.port_input.setPlaceholderText(_translate("MainWindow", "Port Number"))
-        
+        self.label_heading.setText(_translate("MainWindow", "WELCOME TO THE LOCAL DC++ PROJECT"))
+        self.label_uid.setText(_translate("MainWindow", "USER ID*"))
+        self.uid_input.setPlaceholderText(_translate("MainWindow", "Enter your User Id"))
+        self.label_password.setText(_translate("MainWindow", "PASSWORD*"))
+        self.password_input.setPlaceholderText(_translate("MainWindow", "Enter your password"))
+        self.label_ip.setText(_translate("MainWindow", "SERVER IP*"))
+        self.ip_input.setPlaceholderText(_translate("MainWindow", "Enter Server IP"))
+        self.label_port.setText(_translate("MainWindow", "PORT*"))
+        self.port_input.setPlaceholderText(_translate("MainWindow", "Enter Port Number"))
+        self.label_password_2.setText(_translate("MainWindow", "SERVER PASSWORD"))
         self.password_input_2.setPlaceholderText(_translate("MainWindow", "Enter Server Password"))
-        self.label_password_2.setText(_translate("MainWindow", "Server Password"))
+        self.submit_button.setText(_translate("MainWindow", "SUBMIT"))
         self.label_error.setText(_translate("MainWindow", ""))
 
     def validateCredentials(self):
