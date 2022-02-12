@@ -1,12 +1,13 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from .utils import ext_ico_path
+from .utils import ext_ico_path,getSizeStr
 
 
 class File(QtWidgets.QHBoxLayout):
-    def __init__(self, file: dict, parent):
+    def __init__(self,fileID:int, file: dict, parent):
         super(File, self).__init__()
+        self.fileID = fileID
         self.file = file#(filename, fileSize, fileID, username, status = file)
-        filename, fileSize, fileID, username, status = file
+        filename, fileSize, userID, username, status = file
         self.type = filename.split('.')[-1].upper()
         self.parent = parent
         self.setObjectName("_Hbox" + str(fileID))
@@ -65,7 +66,7 @@ class File(QtWidgets.QHBoxLayout):
         )
         self.fileSize.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.fileSize.setObjectName("fileSize" + str(fileID))
-        self.fileSize.setText(_translate("MainWindow", str(int(fileSize)//1048576) + "MB"))
+        self.fileSize.setText(_translate("MainWindow", getSizeStr(fileSize) ))
 
 		#dwnloadBtn
         self.dwnloadBtn = QtWidgets.QPushButton(self.parent)

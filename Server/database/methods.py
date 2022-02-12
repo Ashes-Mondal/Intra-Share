@@ -134,7 +134,7 @@ class Database_Methods:
 
     def _getClientFiles(self, clientID: int):
         try:
-            operation = """SELECT files.fileID, files.filename, files.filesize, files.path, clients.clientID, clients.username,clients.status 
+            operation = """SELECT files.fileID, files.filename, files.path,files.filesize, clients.clientID, clients.username,clients.status 
             FROM files INNER JOIN clients 
             ON (clients.clientID = files.clientID) 
             WHERE clients.clientID = %s"""

@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from  .utils import ext_ico_path
+from  .utils import ext_ico_path,getSizeStr
 
 
 class UserFile(QtWidgets.QHBoxLayout):
@@ -40,7 +40,7 @@ class UserFile(QtWidgets.QHBoxLayout):
         self.fileName.setToolTip(filename)
 
         # fileSize
-        self.fileSize = QtWidgets.QLabel(str(int(fileSize)//1048576) + "MB", self.parent)
+        self.fileSize = QtWidgets.QLabel(getSizeStr(fileSize), self.parent)
         self.fileSize.setStyleSheet(
             "text-align: left;\n"
             "padding-right: 10px;\n"
