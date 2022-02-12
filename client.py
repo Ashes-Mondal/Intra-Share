@@ -179,9 +179,13 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             server_response = self._giveServerMetadata(
                 self.port1, self.port2, pubkey.decode('utf-8'))
             # set filelist in a dictionary
+            self.filesNotPresent = []
             for file in server_response["fileList"]:
                 fileID, filename, filePath, fileSize, ID, username, status = file
-                self.hostedFiles[fileID] = (filename, filePath, fileSize)
+                if os.path.isfile(filePath):
+                    self.hostedFiles[fileID] = (filename, filePath, fileSize)
+                else:
+                    self.filesNotPresent.append(fileID)
 
             self.clientID = server_response["clientID"]
             prevState = getAppLastState(
@@ -224,6 +228,12 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             t3 = Thread(target=self.__sendRequestToServer,
                         daemon=True, name=f'__sendRequestToServer')
             t3.start()
+            for fileID in self.filesNotPresent:
+                try:
+                    self.deleteFile(fileID)
+                except Exception as error:
+                    print(f'{bcolors["FAIL"]}[CLIENT]Failed to remove file with ID:{fileID}{bcolors["ENDC"]}')
+                    print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
         except Exception as error:
             print(
                 f'{bcolors["FAIL"]}[CLIENT]Failed to connect to server {self.server_addr}{bcolors["ENDC"]}')
@@ -408,8 +418,10 @@ class Client(ServerInteraction, FileSharingFunctionalities):
 
     ##!---------- > Shared files methods < ------------!##
 
-    def insertFiles(self):
-        files = getFiles()
+    def insertFiles(self,files: list=[]):
+        if __name__ == "__main__":
+            files = getFiles()
+        if len(files) == 0:return
         request = {"type": "insert_new_files", "data": files}
         self.clientReq_Channel.put(request)
         # Waiting for response from server

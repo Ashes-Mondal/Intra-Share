@@ -205,7 +205,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         # userid = "Agni"
         password = "password"
-        serverip = "192.168.43.244"
+        serverip = "192.168.29.39"
         port = 9999
         
         try:
