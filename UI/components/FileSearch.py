@@ -2,9 +2,10 @@ from PyQt5 import QtWidgets, QtGui,QtCore
 
 
 class FileSearch(QtWidgets.QHBoxLayout):
-    def __init__(self, parent):
+    def __init__(self, parent,searchForFiles):
         super(FileSearch, self).__init__()
         self.parent = parent
+        self.searchForFiles = searchForFiles
         self.setObjectName("file_search" + "_Hbox")
 
         self.lineEdit_2 = QtWidgets.QLineEdit(self.parent)
@@ -31,5 +32,9 @@ class FileSearch(QtWidgets.QHBoxLayout):
             "font: 75 11pt \"MS Sans Serif\";"
         )
         self.pushButton_2.setObjectName("pushButton_2")
+        self.pushButton_2.clicked.connect(self.searchFiles)
         self.addWidget(self.lineEdit_2)
         self.addWidget(self.pushButton_2)
+
+    def searchFiles(self):
+        self.searchForFiles(self.lineEdit_2.text())

@@ -16,11 +16,18 @@ from threading import Thread, currentThread
 
 class BtnThread(QtCore.QThread):
     my_signal = QtCore.pyqtSignal()
+    def __init__(self):
+        super(BtnThread, self).__init__()
+        self.seachMode = False
 
     def run(self):
         while True:
-            self.my_signal.emit()
+            if self.seachMode == False:
+                self.my_signal.emit()
             time.sleep(5)
+
+    def setSearchMode(self,state:bool):
+        self.seachMode = state
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -28,6 +35,8 @@ class MainWindow(QtWidgets.QMainWindow):
         super(MainWindow, self).__init__(parent)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.clientIns = clientIns
+        self.searchMode = True
+        self.fileLayoutLst = []
         self.setObjectName("MainWindow")
         self.resize(1181, 846)
         self.setWindowIcon(QtGui.QIcon('images/logo.svg'))
@@ -78,7 +87,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.verticalLayout_10.addWidget(self.heading1)
         self.verticalLayout_5.addLayout(self.verticalLayout_10)
 
-        self.usrSearchLayout = UserSearch(self.centralwidget)
+        self.usrSearchLayout = UserSearch(self.centralwidget,self.setSearchMode,self.searchUsers,self.createBtns)
         self.verticalLayout_5.addLayout(self.usrSearchLayout)
 
         # Btns in Thread
@@ -86,7 +95,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.userWidget.setLayout(self.verticalLayout_9)
         # Scroll Area Properties
-        self.userScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.userScroll.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.userScroll.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarAlwaysOff)
         self.userScroll.setWidgetResizable(True)
@@ -136,7 +145,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.userFilesWidget.setLayout(self.verticalLayout_18)
         # Scroll Area Properties
         self.userFilesScroll.setVerticalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOn)
+            QtCore.Qt.ScrollBarAsNeeded)
         self.userFilesScroll.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarAlwaysOff)
         self.userFilesScroll.setWidgetResizable(True)
@@ -162,7 +171,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.verticalLayout.setObjectName("verticalLayout")
         self.verticalLayout_7 = QtWidgets.QVBoxLayout()
         self.verticalLayout_7.setObjectName("verticalLayout_7")
-        self.fileSearchLayout = FileSearch(self.centralwidget)
+        self.fileSearchLayout = FileSearch(self.centralwidget,self.searchForFiles)
         self.verticalLayout_7.addLayout(self.fileSearchLayout)
 
         self.line_8 = QtWidgets.QFrame(self.centralwidget)
@@ -218,15 +227,15 @@ class MainWindow(QtWidgets.QMainWindow):
         self.line_9.setObjectName("line_9")
         self.verticalLayout_13.addWidget(self.line_9)
 
-        for file in fileSrchData:
-            fileLayout = File(file, self.fileSearchWidget)
-            # divider
-            self.line_7 = QtWidgets.QFrame(self.fileSearchWidget)
-            self.line_7.setFrameShape(QtWidgets.QFrame.HLine)
-            self.line_7.setFrameShadow(QtWidgets.QFrame.Sunken)
-            self.line_7.setObjectName("line_7")
-            self.verticalLayout_13.addLayout(fileLayout)
-            self.verticalLayout_13.addWidget(self.line_7)
+        # for file in fileSrchData:
+        #     fileLayout = File(file, self.fileSearchWidget)
+        #     # divider
+        #     self.line_7 = QtWidgets.QFrame(self.fileSearchWidget)
+        #     self.line_7.setFrameShape(QtWidgets.QFrame.HLine)
+        #     self.line_7.setFrameShadow(QtWidgets.QFrame.Sunken)
+        #     self.line_7.setObjectName("line_7")
+        #     self.verticalLayout_13.addLayout(fileLayout)
+        #     self.verticalLayout_13.addWidget(self.line_7)
 
         spacerItem2 = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
@@ -235,7 +244,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.fileSearchWidget.setLayout(self.verticalLayout_13)
         # Scroll Area Properties
         self.fileSrchScroll.setVerticalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOn)
+            QtCore.Qt.ScrollBarAsNeeded)
         self.fileSrchScroll.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarAlwaysOff)
         self.fileSrchScroll.setWidgetResizable(True)
@@ -285,7 +294,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.dlFileSearchWidget.setLayout(self.verticalLayout_15)
         # Scroll Area Properties
         self.dlFileSrchScroll.setVerticalScrollBarPolicy(
-            QtCore.Qt.ScrollBarAlwaysOn)
+            QtCore.Qt.ScrollBarAsNeeded)
         self.dlFileSrchScroll.setHorizontalScrollBarPolicy(
             QtCore.Qt.ScrollBarAlwaysOff)
         self.dlFileSrchScroll.setWidgetResizable(True)
@@ -335,9 +344,9 @@ class MainWindow(QtWidgets.QMainWindow):
             _translate("MainWindow", "Search"))
 
         self.label_18.setText(_translate("MainWindow", "Type"))
-        self.label_17.setText(_translate("MainWindow", "File-Name"))
+        self.label_17.setText(_translate("MainWindow", "FileName"))
         self.label_16.setText(_translate("MainWindow", "Owner"))
-        self.label_15.setText(_translate("MainWindow", "Size"))
+        self.label_15.setText(_translate("MainWindow", "Size(Bytes)"))
 
         self.heading3.setText(_translate("MainWindow", "DOWNLOADS"))
 
@@ -376,7 +385,7 @@ class MainWindow(QtWidgets.QMainWindow):
             # time.sleep(0.05)
             for clientID, clientOBJ in self.clientIns.activeClients.items():
                 if clientOBJ.online:
-                    usr = User(clientOBJ, self.userWidget, self.msgCurrentUser)
+                    usr = User(clientOBJ, self.userWidget, self.msgCurrentUser,self.getFileListOfClient)
                     # divider
                     usrline = QtWidgets.QFrame(self.userWidget)
                     usrline.setFrameShape(QtWidgets.QFrame.HLine)
@@ -410,6 +419,72 @@ class MainWindow(QtWidgets.QMainWindow):
     def thread_finished(self):
         print("finished\n")
 
+    def searchUsers(self,search: str):
+        try:
+            lst = self.clientIns.searchUsers(search)
+            self.setSearchMode(True)
+            self.deleteUserProps()
+            for clientOBJ in lst:
+                clientID,username,online = clientOBJ
+                if online:
+                    usr = User(self.clientIns.activeClients[clientID], self.userWidget, self.msgCurrentUser,self.getFileListOfClient)
+                    # divider
+                    usrline = QtWidgets.QFrame(self.userWidget)
+                    usrline.setFrameShape(QtWidgets.QFrame.HLine)
+                    usrline.setFrameShadow(QtWidgets.QFrame.Sunken)
+                    usrline.setObjectName("usrline_" + str(clientID))
+                    # adding to layout and widget
+                    self.verticalLayout_9.addLayout(usr)
+                    self.verticalLayout_9.addWidget(usrline)
+                    self.allUsers.append((usr, usrline))
+                # print(self.allUsers)
+
+            spacerItem = QtWidgets.QSpacerItem(
+                20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+            self.verticalLayout_9.addItem(spacerItem)
+            self.allUsers.append(spacerItem)
+        except Exception as err:
+            print("ERROR: ", err)
+    
+    def setSearchMode(self,state:bool):
+        self.searchMode = state
+        self.btnThrd.setSearchMode(state)
+
+    def searchForFiles(self,filename: str):
+        self.clientIns.searchFiles(filename)
+        self.paintDisplayFiles()
+
+    def getFileListOfClient(self,clientID: int):
+        self.clientIns.getFileListOfClient(clientID)
+        self.paintDisplayFiles()
+    
+    def paintDisplayFiles(self):
+        ##deleting fileLayout from fileLayoutLst
+        for fileLayout in self.fileLayoutLst:
+            fileLayout[0].removeWidget(fileLayout[0].fileType)
+            fileLayout[0].removeWidget(fileLayout[0].fileName)
+            fileLayout[0].removeWidget(fileLayout[0].ownerName)
+            fileLayout[0].removeWidget(fileLayout[0].fileSize)
+            fileLayout[0].removeWidget(fileLayout[0].dwnloadBtn)
+            
+            self.verticalLayout_13.removeWidget(fileLayout[1])
+            self.verticalLayout_13.removeItem(fileLayout[0])
+
+        self.fileLayoutLst.clear()
+        
+        ##painting displayFiles
+        for fileID,file in self.clientIns.displayFiles.items():
+            fileLayout = File(file, self.fileSearchWidget)
+            # divider
+            line_7 = QtWidgets.QFrame(self.fileSearchWidget)
+            line_7.setFrameShape(QtWidgets.QFrame.HLine)
+            line_7.setFrameShadow(QtWidgets.QFrame.Sunken)
+            line_7.setObjectName("line" + str(fileID))
+            self.verticalLayout_13.insertLayout(len(self.verticalLayout_13)-1, fileLayout)
+            self.verticalLayout_13.insertWidget(len(self.verticalLayout_13)-1, line_7)
+            self.fileLayoutLst.append((fileLayout,line_7))
+
+    
 
 if __name__ == "__main__":
     import sys
