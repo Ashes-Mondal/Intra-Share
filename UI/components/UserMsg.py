@@ -19,7 +19,8 @@ class UserMsg(QtWidgets.QHBoxLayout):
             "background-color: rgb(255, 255, 255);\n"
             "color: rgb(0, 0, 0);\n"
             "border: 2px solid rgb(0,0,0);\n"
-            "border-radius: 10px\n"
+            "border-radius: 10px;\n"
+            "font-size: 20px\n"
         )
         # self.label.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.label.setWordWrap(True)
