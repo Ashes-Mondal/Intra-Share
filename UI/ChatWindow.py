@@ -3,7 +3,7 @@ from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from .components.SenderMsg import SenderMsg
 from .components.UserMsg import UserMsg
 from .components.ChatInput import ChatInput
-from threading import Thread, currentThread
+from threading import Thread, currentThread,Event
 
 
 class receiveMessagesThread(QtCore.QThread):
@@ -14,16 +14,24 @@ class receiveMessagesThread(QtCore.QThread):
         self.senderID = senderID
         self.clientIns = clientIns
         self._isRunning = True
-
+        
     def run(self):
         try:
             print("Unread Messages count:",self.clientIns.activeClients[self.senderID].messages.qsize())
             while self._isRunning:
                 try:
-                    message = self.clientIns.activeClients[self.senderID].messages.get_nowait()
+                    message = self.clientIns.activeClients[self.senderID].messages.get(timeout=2)
+                    if self._isRunning == False:
+                        lst = [message]
+                        while self.clientIns.activeClients[self.senderID].messages.empty() == False:
+                            msg = self.clientIns.activeClients[self.senderID].messages.get()
+                            lst.append(msg)
+                        for msgs in lst:
+                            self.clientIns.activeClients[self.senderID].messages.put(msgs)
+                        return
                 except Exception as e:
-                    if self._isRunning:continue
-                    else: raise e
+                    continue
+
                 self.my_signal.emit(self.senderID, message)
         except Exception as err:
             print("Closing Thread:",currentThread().getName())

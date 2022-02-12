@@ -5,13 +5,15 @@ from .utils import ext_ico_path
 class File(QtWidgets.QHBoxLayout):
     def __init__(self, file: dict, parent):
         super(File, self).__init__()
-        self.file = file
+        self.file = file#(filename, filesize, fileID, username, status = file)
+        filename, filesize, fileID, username, status = file
+        self.type = filename.split('.')[-1].upper()
         self.parent = parent
-        self.setObjectName(file["fileName"] + "_Hbox")
+        self.setObjectName("_Hbox" + str(fileID))
         _translate = QtCore.QCoreApplication.translate
 
 		#fileType
-        path = ext_ico_path[file["type"]] if file["type"] in ext_ico_path.keys(
+        path = ext_ico_path[self.type] if self.type in ext_ico_path.keys(
         ) else ext_ico_path["file"]
         self.fileType = QtWidgets.QPushButton(self.parent)
         self.fileType.setStyleSheet(
@@ -21,7 +23,7 @@ class File(QtWidgets.QHBoxLayout):
             "padding: 4;\n"
             "background-color: rgb(237, 237, 237);"
         )
-        self.fileType.setObjectName("fileType_" + file["fileName"])
+        self.fileType.setObjectName("fileType_" + str(fileID))
         self.fileType.setIcon(QtGui.QIcon(path))
         self.fileType.setIconSize(QtCore.QSize(35, 35))
 
@@ -36,9 +38,9 @@ class File(QtWidgets.QHBoxLayout):
             "font: 75 11pt \"Verdana\";"
         )
         self.fileName.setAlignment(QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
-        self.fileName.setObjectName("fileName" + file["fileName"])
-        self.fileName.setText(_translate("MainWindow", file["fileName"][:20]))
-        self.fileName.setToolTip(file["fileName"])
+        self.fileName.setObjectName("fileName" + str(fileID))
+        self.fileName.setText(_translate("MainWindow", filename[:20]))
+        self.fileName.setToolTip(filename)
 
 		#ownerName
         self.ownerName = QtWidgets.QLabel(self.parent)
@@ -46,12 +48,13 @@ class File(QtWidgets.QHBoxLayout):
             "text-align: center;\n"
             "padding-left: 10;\n"
             "padding-right: 10px;\n"
-            "color: rgb(85, 0, 127);\n"
+            # "color: rgb(85, 0, 127);\n"
+            f"color: {'green'if status else 'red'};\n"
             "font: 75 11pt \"Verdana\";"
         )
         self.ownerName.setAlignment(QtCore.Qt.AlignCenter)
-        self.ownerName.setObjectName("ownerName" + file["fileName"])
-        self.ownerName.setText(_translate("MainWindow", file["owner"].upper()))
+        self.ownerName.setObjectName("ownerName" + str(fileID))
+        self.ownerName.setText(_translate("MainWindow", username))
 
 		#fileSize
         self.fileSize = QtWidgets.QLabel(self.parent)
@@ -61,8 +64,8 @@ class File(QtWidgets.QHBoxLayout):
             "font: 75 11pt \"Verdana\";"
         )
         self.fileSize.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
-        self.fileSize.setObjectName("fileSize" + file["fileName"])
-        self.fileSize.setText(_translate("MainWindow", file["size"]))
+        self.fileSize.setObjectName("fileSize" + str(fileID))
+        self.fileSize.setText(_translate("MainWindow", filesize))
 
 		#dwnloadBtn
         self.dwnloadBtn = QtWidgets.QPushButton(self.parent)
@@ -80,9 +83,11 @@ class File(QtWidgets.QHBoxLayout):
             "    background-color: #ffffff;\n"
             "}\n"
         )
-        self.dwnloadBtn.setObjectName("dwnloadBtn_" + file["fileName"])
+        self.dwnloadBtn.setObjectName("dwnloadBtn_" + str(fileID))
         self.dwnloadBtn.setIcon(QtGui.QIcon('images/download.png'))
         self.dwnloadBtn.setIconSize(QtCore.QSize(32, 32))
+        if status == False:
+            self.dwnloadBtn.setEnabled(False)
 
 		#adding widgets
         self.addWidget(self.fileType)
