@@ -21,7 +21,7 @@ from Client.utils import (
 )
 from colors import bcolors
 
-SERVER_IP = '192.168.xxx.xxx'
+SERVER_IP = '192.168.29.39'
 SERVER_PORT = 9999
 SERVER_PASSWORD = ""
 USER_CREDENTIALS = {
@@ -181,10 +181,11 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             # set filelist in a dictionary
             self.filesNotPresent = []
             for file in server_response["fileList"]:
-                fileID, filename, filePath, fileSize, ID, username, status = file
+                fileID, filename,fileSize,filePath, ID, username, status = file
                 if os.path.isfile(filePath):
                     self.hostedFiles[fileID] = (filename, filePath, fileSize)
                 else:
+                    print(filePath)
                     self.filesNotPresent.append(fileID)
 
             self.clientID = server_response["clientID"]
@@ -446,8 +447,8 @@ class Client(ServerInteraction, FileSharingFunctionalities):
             raise Exception(failed)
 
     def deleteFile(self, fileID: int):
-        if fileID not in self.hostedFiles.keys():
-            raise Exception("No such fileID found!")
+        # if fileID not in self.hostedFiles.keys():
+        #     raise Exception("No such fileID found!")
         request = {"type": "delete_file", "data": fileID}
         self.clientReq_Channel.put(request)
         # Waiting for response from server
@@ -460,7 +461,8 @@ class Client(ServerInteraction, FileSharingFunctionalities):
                 f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {server_response["error"]}')
             raise Exception(f'{server_response["error"]}')
         with self._lock:
-            del self.hostedFiles[fileID]
+            if fileID in self.hostedFiles.keys():
+                del self.hostedFiles[fileID]
 
     def getFileListOfClient(self, clientID: int):
         if clientID not in self.activeClients.keys():

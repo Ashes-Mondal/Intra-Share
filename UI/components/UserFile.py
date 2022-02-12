@@ -3,14 +3,18 @@ from  .utils import ext_ico_path
 
 
 class UserFile(QtWidgets.QHBoxLayout):
-    def __init__(self, file: dict, parent):
+    def __init__(self, file:tuple,fileID:int, parent,removeUserFile):
         super(UserFile, self).__init__()
+        self.fileID = fileID
         self.file = file
+        self.removeUserFile = removeUserFile
+        filename, filePath, fileSize = file
+        self.filetype = filename.split('.')[-1].upper()
         self.parent = parent
-        self.setObjectName(file["fileName"] + "_Hbox")
+        self.setObjectName("UserFile" + str(self.fileID))
 
 		#fileTypeBtn
-        path = ext_ico_path[file["type"]] if file["type"] in ext_ico_path.keys(
+        path = ext_ico_path[self.filetype] if self.filetype in ext_ico_path.keys(
         ) else ext_ico_path["file"]
         self.fileTypeBtn = QtWidgets.QPushButton(self.parent)
         self.fileTypeBtn.setStyleSheet(
@@ -20,30 +24,30 @@ class UserFile(QtWidgets.QHBoxLayout):
             "padding: 4;\n"
             "background-color: rgb(237, 237, 237);"
         )
-        self.fileTypeBtn.setObjectName(file["fileName"] + "fileTypeBtn")
+        self.fileTypeBtn.setObjectName("fileTypeBtn" + str(self.fileID))
         self.fileTypeBtn.setIcon(QtGui.QIcon(path))
         self.fileTypeBtn.setIconSize(QtCore.QSize(35, 35))
 
 		#fileName
-        self.fileName = QtWidgets.QLabel(file["fileName"], self.parent)
+        self.fileName = QtWidgets.QLabel(filename[:20], self.parent)
         self.fileName.setStyleSheet(
             "text-align: left;\n"
             "padding-right: 10px;\n"
             "color: rgb(85, 0, 127);\n"
             "font: 75 11pt \"Verdana\";"
         )
-        self.fileName.setObjectName("fileName" + file["fileName"])
-        self.fileName.setToolTip(file["fileName"])
+        self.fileName.setObjectName("fileName" + str(self.fileID))
+        self.fileName.setToolTip(filename)
 
         # fileSize
-        self.fileSize = QtWidgets.QLabel(file["fileSize"], self.parent)
+        self.fileSize = QtWidgets.QLabel(str(int(fileSize)//1048576) + "MB", self.parent)
         self.fileSize.setStyleSheet(
             "text-align: left;\n"
             "padding-right: 10px;\n"
             "color: rgb(85, 0, 127);\n"
             "font: 75 11pt \"Verdana\";"
         )
-        self.fileSize.setObjectName("fileSize" + file["fileName"])
+        self.fileSize.setObjectName("fileSize" + str(self.fileID))
 
         # deleteBtn
         self.deleteBtn = QtWidgets.QPushButton(self.parent)
@@ -61,9 +65,10 @@ class UserFile(QtWidgets.QHBoxLayout):
             "    background-color: red;\n"
             "}\n"
         )
-        self.deleteBtn.setObjectName("deleteBtn" + file["fileName"])
+        self.deleteBtn.setObjectName("deleteBtn" + str(self.fileID))
         self.deleteBtn.setIcon(QtGui.QIcon('images/delete.png'))
         self.deleteBtn.setIconSize(QtCore.QSize(32, 32))
+        self.deleteBtn.clicked.connect(self.deleteUserFile)
 
         self.addWidget(self.fileTypeBtn)
         self.addWidget(self.fileName)
@@ -74,3 +79,9 @@ class UserFile(QtWidgets.QHBoxLayout):
         self.setStretch(1, 4)
         self.setStretch(2, 2)
         self.setStretch(3, 1)
+
+    def deleteUserFile(self):
+        try:
+            self.removeUserFile(self.fileID)
+        except Exception as e:
+            print(e)
