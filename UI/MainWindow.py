@@ -327,7 +327,7 @@ class MainWindow(QtWidgets.QMainWindow):
             _translate("MainWindow", "Search"))
 
         self.heading2.setText(_translate("MainWindow", "YOUR FILES"))
-        # self.InsertFilesLayout.insertFilesBtn.setText(_translate("MainWindow", "INSERT FILES"))
+        self.InsertFilesLayout.insertFilesBtn.clicked.connect(self.openFile)
 
         self.fileSearchLayout.lineEdit_2.setPlaceholderText(
             _translate("MainWindow", "Search Files"))
@@ -399,6 +399,13 @@ class MainWindow(QtWidgets.QMainWindow):
         # print("clicked: ", clientOBJ.username, clientOBJ.clientID)
         self.user = ChatWindow(clientOBJ, self.clientIns, self)
         self.user.show()
+
+    def openFile(self):   
+        options = QtWidgets.QFileDialog.Options()
+        options |= QtWidgets.QFileDialog.DontUseNativeDialog
+        filePath, _ = QtWidgets.QFileDialog.getOpenFileNames(self,"QFileDialog.getOpenFileName()", "","All Files ();;Python Files (.py)", options=options)
+        if filePath:
+            print(filePath)
 
     def thread_finished(self):
         print("finished\n")
