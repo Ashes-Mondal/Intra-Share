@@ -4,7 +4,6 @@ import sys
 from PyQt5 import QtWidgets
 
 from client import Client
-from server import Server
 from UI.login import Ui_MainWindow
 
 if __name__ == "__main__":
@@ -13,11 +12,8 @@ if __name__ == "__main__":
     ##client instance
     clientIns = Client()
     
-    ##client instance
-    serverIns = Server()
-    
     ui = Ui_MainWindow(clientIns)
     ui.startUI()
-    ui.MainWindow.show()
+    ui.show()
     
     sys.exit(app.exec_())

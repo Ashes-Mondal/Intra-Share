@@ -38,9 +38,9 @@ class client_struct:
     def debug(self):
         print(f'clientID: {self.clientID}')
         print(f'username: {self.username}')
+        print(f'is Online: {self.online}')
         print(f'messages: {list(self.messages.queue)}')
         print(f'fileTaking: {self.fileTaking}')
-        print(f'filesGiving: {self.filesGiving}\n')
 
 
 class ServerInteraction:
@@ -58,6 +58,7 @@ class ServerInteraction:
         self.deleteFileRes_Channel = Queue()
         self.searchFileRes_Channel = Queue()
         self.getPublicKeyRes_Channel = Queue()
+        self.getFileDetailsRes_Channel = Queue()
         # <-----------******************---------->
 
         self._lock = Lock()
@@ -156,7 +157,8 @@ class ServerInteraction:
         bundle = data['bundle']
         message = decrypt_message(self.clientCredentials["username"], bundle=bundle)
         self.activeClients[senderID].messages.put(message)
-    
+        print(f'{bcolors["OKGREEN"]}[SERVER]{bcolors["ENDC"]} Message Received:{message} {self.activeClients[senderID].messages.qsize()}', end='\n')
+        
     def _getClientPublicKey(self, clientID: int):
         request = {
             "type": "get_pubkey",

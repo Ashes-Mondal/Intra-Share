@@ -227,6 +227,18 @@ class Functionalities(Database_Methods):
                         server_response = {
                             "type": "client_request_response_CPK", "data": None, "error": str(error)}
                     self.allClients[clientID].sendQueue.put(server_response)
+
+                # get file details
+                elif client_request["type"] == "get_file_details":
+                    fileID = client_request["data"]
+                    try:
+                        res = self._getFileDetails(fileID)
+                        server_response = {
+                            "type": "client_request_response_GFD", "data": res, "error": None}
+                    except Exception as error:
+                        server_response = {
+                            "type": "client_request_response_GFD", "data": None, "error": str(error)}
+                    self.allClients[clientID].sendQueue.put(server_response)
             except socket.error as error:
                 print(f'{bcolors["FAIL"]}[SERVER]Failed to keep listening to the client!{bcolors["ENDC"]}{bcolors["UNDERLINE"]}{self.allClients[clientID].clientIP}{bcolors["ENDC"]}')
                 print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')

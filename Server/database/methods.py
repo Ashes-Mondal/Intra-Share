@@ -134,7 +134,7 @@ class Database_Methods:
 
     def _getClientFiles(self, clientID: int):
         try:
-            operation = """SELECT files.fileID, files.filename, files.filesize, files.path, clients.clientID, clients.username,clients.status 
+            operation = """SELECT files.fileID, files.filename, files.path,files.filesize, clients.clientID, clients.username,clients.status 
             FROM files INNER JOIN clients 
             ON (clients.clientID = files.clientID) 
             WHERE clients.clientID = %s"""
@@ -155,7 +155,7 @@ class Database_Methods:
             curr = self.dbConn.cursor()
             fileIDs = []
             for file in files:
-                filename, filesize, path = file
+                filename, path, filesize = file
                 try:
                     curr.execute(
                         operation, (filename, filesize, path, clientID))
@@ -234,6 +234,23 @@ class Database_Methods:
         except mysql.connector.Error as error:
             print(
                 f'{bcolors["FAIL"]}[DATABASE] Failed to close client\'s connection{bcolors["ENDC"]}')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            err_msg = f'INTERNAL SERVER ERROR'
+            raise Exception(err_msg)
+
+    def _getFileDetails(self,fileId: int):
+        try:
+            operation = """SELECT files.filename,files.filesize, clients.clientID, clients.username,clients.status 
+            FROM files INNER JOIN clients 
+            ON (clients.clientID = files.clientID) 
+            WHERE files.fileID = %s"""
+            curr = self.dbConn.cursor()
+            curr.execute(operation, (fileId,))
+            res = curr.fetchone()
+            return res or []
+        except mysql.connector.Error as error:
+            print(
+                f'{bcolors["FAIL"]}[DATABASE] Failed to get file details {bcolors["ENDC"]}')
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             err_msg = f'INTERNAL SERVER ERROR'
             raise Exception(err_msg)
