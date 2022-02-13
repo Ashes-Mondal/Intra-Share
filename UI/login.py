@@ -280,8 +280,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         serverPassword = self.password_input_2.text()
 
         # userid = "Agni"
-        password = "password"
-        serverip = "192.168.43.244"
+        # password = "password"
+        # serverip = "192.168.29.39"
         port = 9999
         
         try:

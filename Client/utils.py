@@ -62,7 +62,7 @@ class pickling_struct:
         self.fileTaking = {}
         # client.fileTaking =key:fileID,value:[start, completed_bytes, True, pause1]
         for fileID,file in client.fileTaking.items():
-            self.fileTaking[fileID] = [file[0],file[1],False,None]
+            self.fileTaking[fileID] = [file[0],file[1],False,None,file[-1]]
     
     def debug(self):
         print(f'clientID: {self.clientID}')

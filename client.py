@@ -21,7 +21,7 @@ from Client.utils import (
 )
 from colors import bcolors
 
-SERVER_IP = '192.168.29.39'
+SERVER_IP = '192.168.xxx.xxx'
 SERVER_PORT = 9999
 SERVER_PASSWORD = ""
 USER_CREDENTIALS = {
@@ -111,11 +111,14 @@ class Client(ServerInteraction, FileSharingFunctionalities):
                     self.searchFileRes_Channel.put(server_response)
                 elif server_response['type'] == 'client_request_response_CPK':
                     self.getPublicKeyRes_Channel.put(server_response)
+                elif server_response['type'] == 'client_request_response_GFD':
+                    self.getFileDetailsRes_Channel.put(server_response)
             except socket.error as error:
                 print(
                     f'{bcolors["FAIL"]}[CLIENT]Failed to listen to server{bcolors["ENDC"]}')
                 print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
                 self.closeApplication()
+                sys.exit()
 
     # Objective3:Send requests to server
     def __sendRequestToServer(self):
@@ -196,6 +199,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
                         client.clientID, client.username, online=False)
                     obj.messages = client.messages or []
                     obj.fileTaking = client.fileTaking or []
+                    # obj.debug()
                     self.activeClients[client.clientID] = obj
 
             # Successfully authenticated
@@ -247,16 +251,19 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         for clientID, obj in self.activeClients.items():
             for fileID, file in obj.fileTaking.items():
                 # client.fileTaking[fileID] = [start, completed_bytes , True , pause1]
-                if(file[2] == False):
+                if(file[2] == False and file[3]!=None):
+                    print(f'{bcolors["WARNING"]}[CLIENT]{bcolors["ENDC"]} Pausing downlod fileID:{fileID}{bcolors["ENDC"]}')
                     file[3].set()
 
     def closeApplication(self):
+        self.isOnline = False
         self.savefilebeforclose()
         saveAppLastState(
             self.clientCredentials['username'], self.server_addr, self.activeClients)
         self.closeClient()
-        self.closeEvent.set()
-        sys.exit()
+        if __name__ == "__main__":
+            self.closeEvent.set()
+            sys.exit()
     ##!---------- > xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx < ------------!##
 
     ##!---------- > Messaging methods < ------------!##
@@ -353,6 +360,17 @@ class Client(ServerInteraction, FileSharingFunctionalities):
 
     ##!---------- > Download methods < ------------!##
 
+    def getFileDetails(self,fileID:int):
+        request = {"type": "get_file_details", "data": fileID}
+        self.clientReq_Channel.put(request)
+        # Waiting for response from server
+        server_response = self.getFileDetailsRes_Channel.get(timeout=5)
+        self.getFileDetailsRes_Channel.task_done()
+        if server_response["error"]!=None:
+            raise Exception(server_response["error"])
+        else:
+            return tuple(server_response["data"]) 
+    
     def getAddrOfClient(self, clientID: int):
         request = {"type": "get_addr", "data": clientID}
         self.clientReq_Channel.put(request)
@@ -364,7 +382,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         else:
             return tuple(server_response["data"])
 
-    def downloadFile(self, clientID: int, fileID: int, filename: str, filesize: int, download_directory:str):
+    def downloadFile(self, clientID: int, fileID: int, filename: str, filesize: int, filepath:str):
         if (
             fileID in self.activeClients[clientID].fileTaking.keys() and
             self.activeClients[clientID].fileTaking[fileID][3] != None
@@ -388,7 +406,6 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         conn.settimeout(5)
         conn.connect(clientAddr)
         conn.settimeout(None)
-
         # send download_request
         request = {"type": "download_request", "data": {
             "fileID": fileID, "start": start, "end": end}}
@@ -409,7 +426,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         if response["error"] != None:
             raise Exception(response["error"])
         pause1 = Event()
-        filepath = os.path.join(download_directory, filename)
+        # filepath = os.path.join(download_directory, filename)
         file = (fileID, start, end, filesize, filepath, completed_bytes)
         # t1 = Thread(target=self.receiveFile, args=(client, conn, pause1, file), daemon=True, name=f'_receiveFile_{filename}')
         # t1.start()

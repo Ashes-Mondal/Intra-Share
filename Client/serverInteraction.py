@@ -58,6 +58,7 @@ class ServerInteraction:
         self.deleteFileRes_Channel = Queue()
         self.searchFileRes_Channel = Queue()
         self.getPublicKeyRes_Channel = Queue()
+        self.getFileDetailsRes_Channel = Queue()
         # <-----------******************---------->
 
         self._lock = Lock()

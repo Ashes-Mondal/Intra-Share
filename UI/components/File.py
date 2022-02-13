@@ -1,20 +1,23 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from .utils import ext_ico_path,getSizeStr
+from .utils import ext_ico_path, getSizeStr
+from PyQt5.QtWidgets import QMessageBox
 
 
 class File(QtWidgets.QHBoxLayout):
-    def __init__(self,fileID:int, file: dict, parent, downloadsList):
+    def __init__(self, fileID: int, file: dict, parent, downloadsList, clientIns):
         super(File, self).__init__()
+        self.clientIns = clientIns
         self.downloadsList = downloadsList
         self.fileID = fileID
-        self.file = file#(filename, fileSize, fileID, username, status = file)
+        # (filename, fileSize, fileID, username, status = file)
+        self.file = file
         filename, fileSize, userID, username, status = file
         self.type = filename.split('.')[-1].upper()
         self.parent = parent
         self.setObjectName("_Hbox" + str(fileID))
         _translate = QtCore.QCoreApplication.translate
 
-		#fileType
+        # fileType
         path = ext_ico_path[self.type] if self.type in ext_ico_path.keys(
         ) else ext_ico_path["file"]
         self.fileType = QtWidgets.QPushButton(self.parent)
@@ -29,8 +32,7 @@ class File(QtWidgets.QHBoxLayout):
         self.fileType.setIcon(QtGui.QIcon(path))
         self.fileType.setIconSize(QtCore.QSize(35, 35))
 
-
-		#fileName
+        # fileName
         self.fileName = QtWidgets.QLabel(self.parent)
         self.fileName.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.fileName.setStyleSheet(
@@ -39,12 +41,13 @@ class File(QtWidgets.QHBoxLayout):
             "color: rgb(85, 0, 127);\n"
             "font: 75 11pt \"Verdana\";"
         )
-        self.fileName.setAlignment(QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+        self.fileName.setAlignment(
+            QtCore.Qt.AlignLeading | QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
         self.fileName.setObjectName("fileName" + str(fileID))
         self.fileName.setText(_translate("MainWindow", filename[:20]))
         self.fileName.setToolTip(filename)
 
-		#ownerName
+        # ownerName
         self.ownerName = QtWidgets.QLabel(self.parent)
         self.ownerName.setStyleSheet(
             "text-align: center;\n"
@@ -58,18 +61,19 @@ class File(QtWidgets.QHBoxLayout):
         self.ownerName.setObjectName("ownerName" + str(fileID))
         self.ownerName.setText(_translate("MainWindow", username))
 
-		#fileSize
+        # fileSize
         self.fileSize = QtWidgets.QLabel(self.parent)
         self.fileSize.setStyleSheet(
             "text-align: center;\n"
             "color: rgb(85, 0, 127);\n"
             "font: 75 11pt \"Verdana\";"
         )
-        self.fileSize.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
+        self.fileSize.setAlignment(
+            QtCore.Qt.AlignRight | QtCore.Qt.AlignTrailing | QtCore.Qt.AlignVCenter)
         self.fileSize.setObjectName("fileSize" + str(fileID))
-        self.fileSize.setText(_translate("MainWindow", getSizeStr(fileSize) ))
+        self.fileSize.setText(_translate("MainWindow", getSizeStr(fileSize)))
 
-		#dwnloadBtn
+        # dwnloadBtn
         self.dwnloadBtn = QtWidgets.QPushButton(self.parent)
         self.dwnloadBtn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
         self.dwnloadBtn.setStyleSheet(
@@ -92,7 +96,7 @@ class File(QtWidgets.QHBoxLayout):
         if status == False:
             self.dwnloadBtn.setEnabled(False)
 
-		#adding widgets
+            # adding widgets
         self.addWidget(self.fileType)
         self.addWidget(self.fileName)
         self.addWidget(self.ownerName)
@@ -104,6 +108,18 @@ class File(QtWidgets.QHBoxLayout):
         self.setStretch(2, 4)
         self.setStretch(3, 4)
         self.setStretch(4, 1)
-    
+
     def startDownload(self):
-        self.downloadsList(self.fileID, self.file)
+        if self.clientIns.activeClients[self.file[2]].online:
+            self.downloadsList(self.fileID, self.file)
+        else:
+            self.ownerName.setStyleSheet(
+                "text-align: center;\n"
+                "padding-left: 10;\n"
+                "padding-right: 10px;\n"
+                f"color: red;\n"
+                "font: 75 11pt \"Verdana\";"
+            )
+            self.dwnloadBtn.setEnabled(False)
+            ret = QMessageBox.warning(self.parent, 'Failed to start!', f"{self.file[3]} not online!", QMessageBox.Ok, QMessageBox.Cancel )
+

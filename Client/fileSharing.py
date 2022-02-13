@@ -18,6 +18,7 @@ class FileSharingFunctionalities:
         self.displayFiles = {}
         self.hostedFiles = {}
         self.FileTakingclients = []
+        self.isOnline = True
 
     def receiveFile(self,client,conn,pause1,file: tuple):
         fileID, start, end, filesize, filepath,completed_bytes = file
@@ -87,7 +88,7 @@ class FileSharingFunctionalities:
                 # Note:file receiveing client closes the connection
                 client_request = str(conn.recv(4096), 'utf-8')
                 if len(client_request) == 0:
-                    # print(f'{bcolors["FAIL"]}[CLIENT]{addr} went offline!{bcolors["ENDC"]}')
+                    print(f'{bcolors["FAIL"]}[CLIENT]{addr} went offline!{bcolors["ENDC"]}')
                     self._closeFileClient(client)
                 client_request = json.loads(client_request)
 
@@ -127,7 +128,7 @@ class FileSharingFunctionalities:
         start = data["start"]
         end = data["end"]
 
-        filename, fileSize, filePath = self.hostedFiles[data["fileID"]]
+        filename, filePath,fileSize,  = self.hostedFiles[data["fileID"]]
 
         with open(filePath, 'rb') as output:
             output.seek(4096 * start)
@@ -140,6 +141,8 @@ class FileSharingFunctionalities:
                     start += 1
                     if(pause2.is_set()):
                         pause2.clear()
+                        if self.isOnline == False:
+                            sys.exit()
                         pause2.wait()
                         pause2.clear()
 

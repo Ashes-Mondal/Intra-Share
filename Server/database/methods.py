@@ -237,3 +237,20 @@ class Database_Methods:
             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
             err_msg = f'INTERNAL SERVER ERROR'
             raise Exception(err_msg)
+
+    def _getFileDetails(self,fileId: int):
+        try:
+            operation = """SELECT files.filename,files.filesize, clients.clientID, clients.username,clients.status 
+            FROM files INNER JOIN clients 
+            ON (clients.clientID = files.clientID) 
+            WHERE files.fileID = %s"""
+            curr = self.dbConn.cursor()
+            curr.execute(operation, (fileId,))
+            res = curr.fetchone()
+            return res or []
+        except mysql.connector.Error as error:
+            print(
+                f'{bcolors["FAIL"]}[DATABASE] Failed to get file details {bcolors["ENDC"]}')
+            print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} {error}')
+            err_msg = f'INTERNAL SERVER ERROR'
+            raise Exception(err_msg)
