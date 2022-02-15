@@ -10,12 +10,9 @@ from UI.components.InsertFiles import InsertFiles
 from UI.components.FileSearch import FileSearch
 from UI.components.UserSearch import UserSearch
 from UI.components.File import File
-from UI.UIComponents.MessageWindow import MessageWindow
 from UI.components.DownloadFile import DownloadFile
-from UI.components.utils import usrData, userFilesData, ext_ico_path, fileSrchData, downloadsList
-from .ChatWindow import ChatWindow
-from threading import Thread, currentThread
 from UI.components.ReceiveFileThread import ReceiveFileThread
+from .ChatWindow import ChatWindow
 
 
 class BtnThread(QtCore.QThread):
