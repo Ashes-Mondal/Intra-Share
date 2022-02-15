@@ -1,5 +1,4 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from .UIComponents.MainHeading import MainHeading
 from .MainWindow import MainWindow
 
 def validateIP(serverip):
@@ -22,17 +21,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     def __init__(self, clientIns) -> None:
         super(Ui_MainWindow, self).__init__()
         self.clientIns = clientIns
-        # self.MainWindow = QtWidgets.QMainWindow()
-    
-    # def closeEvent(self, event):
-    #     reply = QtWidgets.QMessageBox.question(self, 'Window Close', 'Are you sure you want to close the window?',
-    #             QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No, QtWidgets.QMessageBox.No)
-
-    #     if reply == QtWidgets.QMessageBox.Yes:
-    #         event.accept()
-    #         print('Window closed')
-    #     else:
-    #         event.ignore()
     
     def startUI(self):
         self.setObjectName("MainWindow")
