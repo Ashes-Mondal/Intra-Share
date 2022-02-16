@@ -80,7 +80,7 @@ class Client(ServerInteraction, FileSharingFunctionalities):
         while True:
             try:
                 server_response = str(self.client.recv(4096), 'utf-8')
-                if len(server_response) == 0:
+                if len(server_response)==0 or (not server_response):
                     print(
                         f'{bcolors["FAIL"]}[CLIENT]Server went offline!{bcolors["ENDC"]}')
                     self.closeApplication()

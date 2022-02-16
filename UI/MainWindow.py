@@ -305,7 +305,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def retranslateUi(self):
         _translate = QtCore.QCoreApplication.translate
         title = "Welcome " + \
-            self.clientIns.clientCredentials["username"] + " to DC++"
+            self.clientIns.clientCredentials["username"] + " to 🦈 INTRA-SHARE 🦈"
         self.setWindowTitle(_translate("MainWindow", title))
         self.heading1.setText(_translate("MainWindow", "CURRENT ONLINE USERS"))
         self.usrSearchLayout.lineEdit_2.setPlaceholderText(
@@ -380,7 +380,10 @@ class MainWindow(QtWidgets.QMainWindow):
             print("ERROR: ", err)
 
     def msgCurrentUser(self, clientOBJ):
-        # print("clicked: ", clientOBJ.username, clientOBJ.clientID)
+        ID = clientOBJ.clientID
+        if ID in self.clientIns.activeMessagingClient.keys():
+            ret = QMessageBox.warning(self, 'Failed to open...',f"Chat window already open!", QMessageBox.Ok, QMessageBox.Cancel)
+            return
         self.user = ChatWindow(clientOBJ, self.clientIns, self)
         self.user.show()
 
@@ -392,7 +395,6 @@ class MainWindow(QtWidgets.QMainWindow):
         if filePathList:
             try:
                 files = []
-                print(filePathList)
                 for filepath in filePathList:
                     filename = filepath.split("/")[-1]
                     filesize = os.path.getsize(filepath)
@@ -528,8 +530,7 @@ class MainWindow(QtWidgets.QMainWindow):
             if fileID in self.clientIns.activeClients[userID].fileTaking.keys():
                 # start,completed_bytes,isPaused,pauseEvent,filepath = self.clientIns.activeClients[userID].fileTaking[fileID]
                 # parameters = self.clientIns.downloadFile(userID, fileID, fileName, int(fileSize), filepath)
-                QMessageBox.information(
-                    self, "File Download information", "Already present in downloads section.")
+                QMessageBox.information(self, "File Download information", "Already present in downloads section.")
                 return
             else:
                 # Open dialog to select folder
@@ -586,7 +587,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.verticalLayout_18.removeWidget(Component[1])
             self.verticalLayout_18.removeItem(Component[0])
 
-            self.downloadFilesComponents.pop(fileID)
+            print("REMOVING DOWNLOAD COMPONENT",fileID)
+            del self.downloadFilesComponents[fileID]
+            
             if fileID in self.clientIns.activeClients[userID].fileTaking.keys():
                 self.clientIns.activeClients[userID].fileTaking.pop(fileID)
         except Exception as e:

@@ -41,8 +41,11 @@ class ReceiveFileThread(QtCore.QThread):
                             print(f'{bcolors["HEADER"]}Reason:{bcolors["ENDC"]} Client went offline!')
                             with self.filelock:
                                 self.clientObj.fileTaking[fileID] = [start, completed_bytes, True, self.pauseEvent,filepath]
-                            self.stopSig.emit()
-                            print("Stopping the thread.!")
+                            if completed_bytes == filesize:
+                                self.finishedSig.emit(self.clientObj.clientID,self.file[0])
+                            else:
+                                print("Stopping the thread..!")
+                                self.stopSig.emit()
                             break
                         output.write(data)
                         completed_bytes += len(data)
