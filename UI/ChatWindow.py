@@ -75,7 +75,8 @@ class ChatWindow(QtWidgets.QMainWindow):
                 len(self.verticalLayout_2)-1, hbox1)
         except Exception as error:
             print(error)
-            raise error
+            ret = QtWidgets.QMessageBox.warning(self, 'Failed to send...',f"{error}", QtWidgets.QMessageBox.Ok, QtWidgets.QMessageBox.Cancel)
+            self.close()
 
     def StartButtonEvent(self):
         self.receiveMessagesThread = receiveMessagesThread(self.receiverClientObj.clientID,self.clientIns)

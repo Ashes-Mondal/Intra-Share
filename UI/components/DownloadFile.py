@@ -142,10 +142,9 @@ class DownloadFile(QtWidgets.QVBoxLayout):
 
     def openReceiveFileThread(self):
         fileName, fileSize, userID, username, status = self.file
-        print(userID, self.fileID, fileName, int(fileSize), self.filepath)
         parameters = self.clientIns.downloadFile(userID, self.fileID, fileName, int(fileSize), self.filepath)
         self.dwnloadThread = ReceiveFileThread(parameters)
-        self.dwnloadThread.finished.connect(lambda: print(f"dwnloadThread finished {self.fileID}"))
+        self.dwnloadThread.finished.connect(self.deleteSelf)
         self.dwnloadThread.finishedSig.connect(self.removeDownloadFile)
         self.dwnloadThread.progress.connect(self.downloadFileProgress)
         self.dwnloadThread.stopSig.connect(self.stopFileTransfer)
@@ -161,4 +160,9 @@ class DownloadFile(QtWidgets.QVBoxLayout):
             self.isPaused = True
             self.pOr.setIcon(QtGui.QIcon('images/play.png'))
             self.pOr.setIconSize(QtCore.QSize(32, 32))
-        self.clientIns.activeClients[self.file[2]].fileTaking[self.fileID][3] = None
+        if self.fileID in self.clientIns.activeClients[self.file[2]].fileTaking.keys():
+            self.clientIns.activeClients[self.file[2]].fileTaking[self.fileID][3] = None
+
+    def deleteSelf(self):
+        print(f"dwnloadThread finished {self.fileID}")
+        del self

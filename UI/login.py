@@ -245,7 +245,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.submit_button.setText(_translate("MainWindow", "SUBMIT"))
         self.submit_button.clicked.connect(self.validateCredentials)
         
-        self.label_heading.setText(_translate("MainWindow", "WELCOME TO THE LOCAL DC++ PROJECT"))
+        self.label_heading.setText(_translate("MainWindow", "WELCOME TO 🦈 INTRA-SHARE 🦈"))
         self.label_uid.setText(_translate("MainWindow", "USER ID*"))
         self.uid_input.setPlaceholderText(_translate("MainWindow", "Enter your User Id"))
         self.label_password.setText(_translate("MainWindow", "PASSWORD*"))
@@ -259,6 +259,11 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         self.submit_button.setText(_translate("MainWindow", "SUBMIT"))
         self.label_error.setText(_translate("MainWindow", ""))
 
+        # self.port_input.setText(_translate("MainWindow", "9999"))
+        # self.password_input.setText(_translate("MainWindow", "password"))
+        # self.ip_input.setText(_translate("MainWindow", "192.168.29.39"))
+        # self.password_input_2.setText(_translate("MainWindow", "qwerty"))
+        
     def validateCredentials(self):
         
         userid = self.uid_input.text()
@@ -270,7 +275,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         # userid = "Agni"
         # password = "password"
         # serverip = "192.168.29.39"
-        port = 9999
+        # port = 9999
+        # serverPassword = 'qwerty'
         
         try:
             allValid = True

@@ -13,7 +13,7 @@ load_dotenv()
 from colors import bcolors
 from Server.functionalities import Functionalities, encodeJSON
 
-
+SERVER_PWD = 'qwerty'
 class client_struct:
     def __init__(self, clientID: int, client: tuple, username: str, port2: int):
         self.client = client
@@ -163,7 +163,7 @@ def get_ip():
 
 def main():
     try:
-        server = Server(host=get_ip(), port=9999, password=None)
+        server = Server(host=get_ip(), port=9999, password=SERVER_PWD)
         server.startServer()
         while True:
             k = input()

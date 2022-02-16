@@ -20,17 +20,17 @@ ext_ico_path = {
 
 def getSizeStr(size_bytes: int):
     MB = int(size_bytes)//1048576
-    if (MB % 1000) > 0:
+    if MB // 1000:
         GB = round(MB/1000, 1)
         return str(GB) + "GB"
-    if MB == 0:
-        KB = int(size_bytes)//1024
-        if KB == 0:
-            return str(size_bytes) + "B"
-        else:
-            return str(KB) + "KB"
-    else:
+    KB = int(size_bytes)//1024
+    if KB // 1000:
+        MB = round(KB/1000, 1)
         return str(MB) + "MB"
+    if KB == 0:
+        return str(size_bytes) + "B"
+    else:
+        return str(KB) + "KB"
 
 
 def recvall(conn, n):
