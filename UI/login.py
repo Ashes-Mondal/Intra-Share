@@ -261,7 +261,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
 
         # self.port_input.setText(_translate("MainWindow", "9999"))
         # self.password_input.setText(_translate("MainWindow", "password"))
-        # self.ip_input.setText(_translate("MainWindow", "192.168.29.39"))
+        # self.ip_input.setText(_translate("MainWindow", "192.168.xx.xx"))
         # self.password_input_2.setText(_translate("MainWindow", "qwerty"))
         
     def validateCredentials(self):
@@ -271,12 +271,6 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         serverip = self.ip_input.text()
         port = self.port_input.text()
         serverPassword = self.password_input_2.text()
-
-        # userid = "Agni"
-        # password = "password"
-        # serverip = "192.168.29.39"
-        # port = 9999
-        # serverPassword = 'qwerty'
         
         try:
             allValid = True

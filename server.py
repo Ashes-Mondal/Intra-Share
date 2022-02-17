@@ -13,7 +13,7 @@ load_dotenv()
 from colors import bcolors
 from Server.functionalities import Functionalities, encodeJSON
 
-SERVER_PWD = 'qwerty'
+SERVER_PWD = None
 class client_struct:
     def __init__(self, clientID: int, client: tuple, username: str, port2: int):
         self.client = client
